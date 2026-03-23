@@ -1,0 +1,5 @@
+@reference "tailwindcss";
+
+.slide-custom {
+  @apply h-96  flex justify-center items-center font-semibold;
+}

@@ -1,0 +1,35 @@
+<div class="flex min-h-full flex-col justify-center  py-12 lg:px-8">
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="w-full bg-white rounded-lg shadow  md:mt-0 sm:max-w-md xl:p-0">
+            <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
+                    Inicia sesión en tu cuenta.
+                </h1>
+                <form action="#" method="POST" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-sm/6 font-medium">Correo electrónico</label>
+                        <div class="mt-2">
+                            <input type="text" placeholder="Correo electronico" class="input w-full" id="email"
+                                type="email" name="email" required />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="password" class="block text-sm/6 font-medium">Contraseña</label>
+                        </div>
+                        <div class="mt-2">
+                            <input type="text" placeholder="Contraseña" class="input w-full" id="password"
+                                type="password" name="password" required />
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="button" class="btn btn-primary" (click)="login()">
+                            Iniciar Sesión
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

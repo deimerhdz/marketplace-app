@@ -1,0 +1,9 @@
+[build]
+# base = "marketplace-app"
+    command ="ng build"
+    publish = "dist/marketplace-app/browser"
+
+    [[redirects]]
+    from = "/*"
+    to ="/index.html"
+    status = 200

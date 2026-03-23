@@ -1,0 +1,5 @@
+@reference "tailwindcss";
+
+.slide-thumbnail {
+  @apply w-40 h-40 shadow-md cursor-pointer;
+}

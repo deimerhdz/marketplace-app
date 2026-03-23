@@ -1,0 +1,12 @@
+<div class="flex w-full gap-4 py-6">
+    <div class="w-full max-w-62.5">
+        <h3>Filtros</h3>
+    </div>
+    <div class="min-w-0 flex-1">
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+            @for (bull of bulls(); track bull.id) {
+            <app-card [item]="bull" (clickChange)="navigateToDetail($event)" />
+            }
+        </div>
+    </div>
+</div>
