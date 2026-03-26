@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { RoutesApp } from './shared/const/routes.app';
+import { NotAuthenticatedGuard } from './features/auth/guards/notAuthenticated.guard';
+import { AuthenticatedGuard } from './features/auth/guards/authenticated.guard';
 
 export const routes: Routes = [
   {
@@ -20,10 +22,12 @@ export const routes: Routes = [
   {
     path: RoutesApp.auth,
     loadComponent: () => import(`@shared/templates/home-layout/home-layout`),
+    canMatch: [NotAuthenticatedGuard],
     children: [{ path: RoutesApp.root, loadChildren: () => import(`@features/auth/auth.routes`) }],
   },
   {
     path: RoutesApp.admin,
+    canMatch: [AuthenticatedGuard],
     loadComponent: () => import(`@shared/templates/admin-layout/admin-layout`),
     children: [
       {

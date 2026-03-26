@@ -1,0 +1,58 @@
+<div class="flex  items-center gap-4 mb-4">
+    <button class="btn" (click)="newBull()">Volver</button>
+    <h2 class="text-2xl font-bold ">Agregar toro </h2>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid grid-cols-2 gap-4">
+        <div class="mb-3">
+            <label for="name" class="block">Nombre: (*)</label>
+            <input type="text" formControlName="name" id="name" placeholder="Nombre" class="input w-full" />
+            @if (isInvalid('name')) {
+            <span class="text-error text-sm">{{ getError('name') }}</span>
+            }
+        </div>
+        <div class="mb-3">
+            <label for="stud" class="block">Stud: (*)</label>
+            <input type="text" formControlName="stud" id="stud" placeholder="Type here" class="input w-full" />
+            @if (isInvalid('stud')) {
+            <span class="text-error text-sm">{{ getError('stud') }}</span>
+            }
+        </div>
+        <div class="mb-3">
+            <label for="breed" class="block">Raza (*)</label>
+            <select class="select w-full" formControlName="breedId" id="breed">
+                <option value="" disabled selected>Seleccione una raza</option>
+                @for (item of breeds(); track item.id) {
+                <option [value]="item.id">{{item.name}}</option>
+
+                }
+            </select>
+            @if (isInvalid('breed')) {
+            <span class="text-error text-sm">{{ getError('breed') }}</span>
+            }
+        </div>
+        <div class="mb-3">
+            <label for="birthDate" class="block">Fecha de nacimiento (*)</label>
+            <input type="date" id="birthDate" formControlName="birthDate" placeholder="Type here"
+                class="input w-full" />
+            @if (isInvalid('birthDate')) {
+            <span class="text-error text-sm">{{ getError('birthDate') }}</span>
+            }
+        </div>
+
+        <!-- Descripción ocupa las 2 columnas -->
+        <div class="mb-3 col-span-2">
+            <label for="description" class="block">Descripción: (*)</label>
+            <textarea class="textarea w-full" formControlName="description" placeholder="description"></textarea>
+            @if (isInvalid('description')) {
+            <span class="text-error text-sm">{{ getError('description') }}</span>
+            }
+        </div>
+
+        <!-- Botón también ocupa las 2 columnas -->
+        <div class="mb-3 col-span-2">
+            <button class="btn btn-success text-white" type="submit">Registrar</button>
+        </div>
+    </div>
+</form>

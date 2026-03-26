@@ -1,0 +1,339 @@
+<!-- Header -->
+<div class="flex items-center gap-4 mb-6">
+    <button class="btn" type="button" (click)="goBack()">Volver</button>
+    <h2 class="text-2xl font-bold">Detalle del toro</h2>
+</div>
+
+@if (loading()) {
+<div class="flex justify-center items-center h-40">
+    <span class="loading loading-spinner loading-lg text-success"></span>
+</div>
+}
+
+@if (error()) {
+<div class="alert alert-error"><span>{{ error() }}</span></div>
+}
+
+@if (bull()) {
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+
+    <!-- ───── Tarjeta Avatar ───── -->
+    <div class="col-span-1  flex flex-col gap-4">
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body items-center text-center gap-4">
+                <div class="avatar">
+                    <div
+                        class="w-36 h-36 rounded-full ring ring-success ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-200 flex items-center justify-center">
+                        @if (photoPreview()) {
+                        <img [src]="photoPreview()" alt="Foto del toro" class="object-cover w-full h-full" />
+                        } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 opacity-30" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M5.121 17.804A4 4 0 018 16h8a4 4 0 012.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        }
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold">{{ bull()?.name }}</h3>
+                    <p class="text-sm text-base-content/60">{{ bull()?.breed?.name }}</p>
+                </div>
+                <label class="btn btn-success btn-sm text-white w-full cursor-pointer">
+                    {{ photoPreview() ? 'Cambiar foto' : 'Agregar foto' }}
+                    <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)" />
+                </label>
+            </div>
+        </div>
+
+        <!-- Badge stock rápido -->
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body p-4 flex-row items-center justify-between">
+                <span class="text-sm text-base-content/60 font-medium">Stock actual</span>
+                <span class="badge badge-success badge-lg text-white font-bold">{{ totalPajillas }} dosis</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ───── Panel principal con Tabs ───── -->
+    <div class="col-span-2 flex flex-col gap-4">
+
+        <!-- Tabs -->
+        <div role="tablist" class="tabs tabs-bordered">
+            <button role="tab" class="tab" [class.tab-active]="activeTab() === 'info'"
+                (click)="setTab('info')">Información</button>
+            <button role="tab" class="tab" [class.tab-active]="activeTab() === 'stock'"
+                (click)="setTab('stock')">Inventario</button>
+            <button role="tab" class="tab" [class.tab-active]="activeTab() === 'gallery'"
+                (click)="setTab('gallery')">Imágenes</button>
+            <button role="tab" class="tab" [class.tab-active]="activeTab() === 'video'"
+                (click)="setTab('video')">Video</button>
+            <button role="tab" class="tab" [class.tab-active]="activeTab() === 'genetic'"
+                (click)="setTab('genetic')">Evaluación genética</button>
+        </div>
+
+        <!-- ── TAB: Información general ── -->
+        @if (activeTab() === 'info') {
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <h3 class="card-title text-lg mb-2">Información general</h3>
+                <div class="grid grid-cols-2 gap-x-8 gap-y-3">
+                    <div>
+                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Nombre</p>
+                        <p class="font-semibold">{{ bull()?.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Stud</p>
+                        <p class="font-semibold">{{ bull()?.stud }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Raza</p>
+                        <p class="font-semibold">{{ bull()?.breed?.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Fecha de nacimiento</p>
+                        <p class="font-semibold">{{ bull()?.birthDate | date: 'dd/MM/yyyy' }}</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Descripción</p>
+                        <p class="font-semibold leading-relaxed">{{ bull()?.description }}</p>
+                    </div>
+                </div>
+                <div class="card-actions justify-end mt-4">
+                    <button class="btn btn-outline btn-sm">Editar</button>
+                    <button class="btn btn-error btn-sm text-white">Eliminar</button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- ── TAB: Inventario / Stock ── -->
+        @if (activeTab() === 'stock') {
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="card-title text-lg">Gestión de pajillas</h3>
+                    <button class="btn btn-success btn-sm text-white">+ Agregar pajilla</button>
+                </div>
+
+                <!-- Resumen rápido -->
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <div class="stat bg-base-200 rounded-xl p-3">
+                        <div class="stat-title text-xs">Total pajillas</div>
+                        <div class="stat-value text-lg text-success">{{ totalPajillas }}</div>
+                    </div>
+                    <div class="stat bg-base-200 rounded-xl p-3">
+                        <div class="stat-title text-xs">Tipos registrados</div>
+                        <div class="stat-value text-lg">{{ pajillas().length }}</div>
+                    </div>
+                    <div class="stat bg-base-200 rounded-xl p-3">
+                        <div class="stat-title text-xs">Stock crítico</div>
+                        <div class="stat-value text-lg text-error">
+                            {{ pajillas().filter(isLowStock).length }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descripción</th>
+                                <th>Precio</th>
+                                <th>Stock actual</th>
+                                <th>Stock mínimo</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (item of pajillas(); track item.id) {
+                            <tr [class.bg-red-50]="isLowStock(item)" [class.bg-opacity-5]="isLowStock(item)">
+                                <td class="font-mono text-sm">{{ item.code }}</td>
+                                <td>{{ item.name }}</td>
+                                <td class="font-semibold">
+                                    {{ item.price | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                </td>
+                                <td>
+                                    <span class="font-bold text-base" [class.text-error]="isLowStock(item)"
+                                        [class.text-success]="!isLowStock(item)">
+                                        {{ item.stock }}
+                                    </span>
+                                </td>
+                                <td class="text-base-content/60">{{ item.minStock }}</td>
+                                <td>
+                                    @if (isLowStock(item)) {
+                                    <span class="badge badge-error badge-sm text-white">Stock crítico</span>
+                                    } @else {
+                                    <span class="badge badge-success badge-sm text-white">OK</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="flex gap-1">
+                                        <button class="btn btn-ghost btn-xs" title="Editar">✏️</button>
+                                        <button class="btn btn-ghost btn-xs text-error" title="Eliminar">✕</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-right font-bold text-sm">Total en stock:</td>
+                                <td class="font-bold text-success text-base">{{ totalPajillas }} uds.</td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+        }
+
+        <!-- ── TAB: Galería de imágenes ── -->
+        @if (activeTab() === 'gallery') {
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="card-title text-lg">Galería de imágenes</h3>
+                    <label class="btn btn-success btn-sm text-white cursor-pointer">
+                        + Subir imágenes
+                        <input type="file" accept="image/*" multiple class="hidden"
+                            (change)="onGallerySelected($event)" />
+                    </label>
+                </div>
+
+                @if (galleryPreviews().length === 0) {
+                <div
+                    class="flex flex-col items-center justify-center h-40 border-2 border-dashed border-base-300 rounded-xl text-base-content/40 gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M3 16l4-4a3 3 0 014 0l4 4m0 0l1-1a3 3 0 014 0l2 2M3 20h18M21 8a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="text-sm">No hay imágenes. Sube algunas fotos del toro.</span>
+                </div>
+                } @else {
+                <div class="grid grid-cols-3 gap-3">
+                    @for (img of galleryPreviews(); track $index) {
+                    <div class="relative group rounded-xl overflow-hidden border border-base-200 aspect-square">
+                        <img [src]="img" class="w-full h-full object-cover" alt="Imagen del toro" />
+                        <button
+                            class="absolute top-1 right-1 btn btn-xs btn-error text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            (click)="removeGalleryImage($index)">✕</button>
+                    </div>
+                    }
+                </div>
+                }
+
+                @if (galleryPreviews().length > 0) {
+                <div class="card-actions justify-end mt-4">
+                    <button class="btn btn-success btn-sm text-white">Guardar imágenes</button>
+                </div>
+                }
+            </div>
+        </div>
+        }
+
+        <!-- ── TAB: Video ── -->
+        @if (activeTab() === 'video') {
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <h3 class="card-title text-lg mb-4">Video del toro</h3>
+
+                @if (!videoPreview()) {
+                <label
+                    class="flex flex-col items-center justify-center h-48 border-2 border-dashed border-base-300 rounded-xl cursor-pointer hover:border-success transition-colors text-base-content/40 gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                    </svg>
+                    <span class="text-sm font-medium">Haz clic para subir un video</span>
+                    <span class="text-xs">MP4, MOV, AVI — máx. 200MB</span>
+                    <input type="file" accept="video/*" class="hidden" (change)="onVideoSelected($event)" />
+                </label>
+                } @else {
+                <div class="flex flex-col gap-3">
+                    <video [src]="videoPreview()!" controls
+                        class="w-full rounded-xl border border-base-200 max-h-64"></video>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-base-content/60">{{ videoFile()?.name }}</span>
+                        <div class="flex gap-2">
+                            <button class="btn btn-error btn-sm text-white" (click)="removeVideo()">Eliminar</button>
+                            <button class="btn btn-success btn-sm text-white">Guardar video</button>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+        }
+
+        <!-- ── TAB: Evaluación genética ── -->
+        @if (activeTab() === 'genetic') {
+        <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body">
+                <h3 class="card-title text-lg mb-4">Evaluación genética</h3>
+
+                @if (!geneticFileName()) {
+                <label
+                    class="flex flex-col items-center justify-center h-48 border-2 border-dashed border-base-300 rounded-xl cursor-pointer hover:border-success transition-colors text-base-content/40 gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="text-sm font-medium">Haz clic para subir el documento</span>
+                    <span class="text-xs">PDF, DOC, DOCX, XLS — máx. 20MB</span>
+                    <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="hidden"
+                        (change)="onGeneticSelected($event)" />
+                </label>
+                } @else {
+                <div class="flex items-center justify-between p-4 border border-base-200 rounded-xl bg-base-200/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-sm">{{ geneticFileName() }}</p>
+                            <p class="text-xs text-base-content/50">Listo para guardar</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-error btn-sm text-white" (click)="removeGenetic()">Eliminar</button>
+                        <button class="btn btn-success btn-sm text-white">Guardar</button>
+                    </div>
+                </div>
+                }
+
+                <!-- Documentos ya subidos (mock) -->
+                <div class="mt-4">
+                    <p class="text-xs text-base-content/50 uppercase tracking-wide mb-2">Documentos guardados</p>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center justify-between p-3 border border-base-200 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <span class="badge badge-success badge-sm text-white">PDF</span>
+                                <span class="text-sm">evaluacion_genetica_2023.pdf</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-ghost btn-xs">Ver</button>
+                                <button class="btn btn-ghost btn-xs text-error">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        }
+
+    </div>
+</div>
+}

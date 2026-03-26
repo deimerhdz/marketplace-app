@@ -11,45 +11,20 @@ interface MenuSidebar {
   selector: 'app-sidebar',
   template: `
     <div class="drawer lg:drawer-open">
-      <input #drawerToggle id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content">
-        <!-- Navbar -->
-        <nav class="navbar w-full bg-base-300">
-          <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
-            <!-- Sidebar toggle icon -->
-            <i class="fa-solid fa-bars"></i>
-          </label>
-          <div class="px-4">
-            <p class="text-xl font-semibold">Tauru pro</p>
-          </div>
-        </nav>
-        <!-- Page content here -->
-        <div class="p-4"><ng-content /></div>
-      </div>
+      <input #drawerToggle id="my-drawer-3" type="checkbox" class="drawer-toggle" />
 
-      <div class="drawer-side is-drawer-close:overflow-visible">
-        <label for="my-drawer-4" aria-label="open sidebar" class="drawer-overlay"></label>
-        <div
-          class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64"
-        >
+      <div class="drawer-side">
+        <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
+        <ul class="menu bg-base-200 min-h-full w-60 md:w-80 p-4">
           <!-- Sidebar content here -->
-          <ul class="menu w-full grow">
-            <!-- List item -->
-            @for (item of menu(); track item.title) {
-              <li [routerLink]="item.route" routerLinkActive="menu-active">
-                <button
-                  class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                  [attr.data-tip]="item.title"
-                  (click)="closeDrawer()"
-                >
-                  <i [class]="item.icon"></i>
-                  <!-- Home icon -->
-                  <span class="is-drawer-close:hidden">{{ item.title }}</span>
-                </button>
-              </li>
-            }
-          </ul>
-        </div>
+          @for (item of menu(); track item.title) {
+            <li [routerLink]="item.route" routerLinkActive="menu-active">
+              <button class="" [attr.data-tip]="item.title" (click)="closeDrawer()">
+                <span>{{ item.title }}</span>
+              </button>
+            </li>
+          }
+        </ul>
       </div>
     </div>
   `,
