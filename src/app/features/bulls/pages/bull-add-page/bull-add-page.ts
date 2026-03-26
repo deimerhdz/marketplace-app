@@ -61,7 +61,9 @@ export default class BullAddPage implements OnInit {
     const bull = this.form.value as CreateBull;
     this._bullService.create(bull).subscribe({
       next: (response) => {
-        console.log(response);
+        this._router.navigateByUrl(
+          `${RoutesApp.admin}/${RoutesApp.bulls}/${RoutesApp.detail}/${response.id}`,
+        );
       },
     });
   }

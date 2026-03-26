@@ -1,3 +1,4 @@
+import { Inventory } from './inventory.model';
 import { StrawType } from '../enums/straw.enum';
 
 export interface Straw {
@@ -6,4 +7,5 @@ export interface Straw {
   price: number;
   type: StrawType;
   minOrder: number;
+  inventory: Inventory;
 }

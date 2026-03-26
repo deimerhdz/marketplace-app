@@ -1,48 +1,33 @@
+import { ImagePipe } from '@app/shared/pipe/image.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
+  input,
   OnInit,
   signal,
 } from '@angular/core';
+import { MediaFile } from '@app/core/model/media-file.model';
 import { register, SwiperContainer } from 'swiper/element/bundle';
 import { SwiperOptions } from 'swiper/types';
 // register Swiper custom elements
 register();
 @Component({
   selector: 'app-gallery',
+  imports: [ImagePipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrl: './gallery.css',
   template: `
     <swiper-container init="false" class="mySwiper" thumbs-swiper=".mySwiper2" space-between="10">
-      <swiper-slide>
-        <img
-          class="w-full md:w-4/5 aspect-251/171 rounded-sm object-cover mx-auto mb-8"
-          src="https://i.pinimg.com/736x/89/c4/25/89c4258772dbc825a6f245227ef52fe5.jpg"
-          alt="image"
-        />
-      </swiper-slide>
-      <swiper-slide>
-        <img
-          class="w-full md:w-4/5 aspect-251/171 rounded-sm object-cover mx-auto mb-8"
-          src="https://a.storyblok.com/f/160385/aabd501b3d/toro-brahman-lecherias.jpg"
-          alt="image"
-        />
-      </swiper-slide>
-      <swiper-slide>
-        <img
-          class="w-full md:w-4/5 aspect-251/171 rounded-sm object-cover mx-auto mb-8"
-          src="https://images.engormix.com/forums/ph-20170506_114615-S-12006-brah.jpg"
-          alt="image"
-        />
-      </swiper-slide>
-      <swiper-slide>
-        <img
-          class="w-full md:w-4/5 aspect-251/171 rounded-sm object-cover mx-auto mb-8"
-          src="https://a.storyblok.com/f/160385/0b4ecc9e51/caracteristicas_toro_brahman.jpg/m/?w=256&q=100"
-          alt="image"
-        />
-      </swiper-slide>
+      @for (item of gallery(); track $index) {
+        <swiper-slide>
+          <img
+            class="w-full md:w-4/5 aspect-251/171 rounded-sm object-cover mx-auto mb-8"
+            [src]="item.key | imagePipe"
+            [alt]="item.key"
+          />
+        </swiper-slide>
+      }
     </swiper-container>
 
     <swiper-container
@@ -53,40 +38,17 @@ register();
       watch-slides-progress="true"
     >
       <swiper-slide>
-        <div class="slide-thumbnail">
-          <img
-            src="https://i.pinimg.com/736x/89/c4/25/89c4258772dbc825a6f245227ef52fe5.jpg"
-            class="w-full h-full object-cover rounded-sm"
-            alt="image"
-          />
-        </div>
-      </swiper-slide>
-      <swiper-slide>
-        <div class="slide-thumbnail">
-          <img
-            src="https://a.storyblok.com/f/160385/aabd501b3d/toro-brahman-lecherias.jpg"
-            class="w-full h-full object-cover rounded-sm"
-            alt="image"
-          />
-        </div>
-      </swiper-slide>
-      <swiper-slide>
-        <div class="slide-thumbnail">
-          <img
-            src="https://images.engormix.com/forums/ph-20170506_114615-S-12006-brah.jpg"
-            class="w-full h-full object-cover rounded-sm"
-            alt="image"
-          />
-        </div>
-      </swiper-slide>
-      <swiper-slide>
-        <div class="slide-thumbnail">
-          <img
-            src="https://a.storyblok.com/f/160385/0b4ecc9e51/caracteristicas_toro_brahman.jpg/m/?w=256&q=100"
-            class="w-full h-full object-cover rounded-sm"
-            alt="image"
-          />
-        </div>
+        @if (gallery()?.length! > 1) {
+          @for (item of gallery(); track $index) {
+            <div class="slide-thumbnail">
+              <img
+                [src]="item.key | imagePipe"
+                class="w-full h-full object-cover rounded-sm"
+                [alt]="item.key"
+              />
+            </div>
+          }
+        }
       </swiper-slide>
     </swiper-container>
   `,
@@ -94,6 +56,8 @@ register();
 })
 export class Gallery implements OnInit {
   swiperElement = signal<SwiperContainer | null>(null);
+
+  gallery = input<MediaFile[]>();
 
   ngOnInit(): void {
     this.config();

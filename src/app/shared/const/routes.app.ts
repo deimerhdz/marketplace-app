@@ -7,6 +7,7 @@ export enum RoutesApp {
   bulls = 'bulls',
   admin = 'admin',
   orders = 'orders',
+  straws = 'straws',
   breeds = 'breeds',
   detail = 'detail',
   catalog = 'catalogo',

@@ -12,22 +12,6 @@ export interface Paginated<T> {
   empty: boolean;
 }
 
-export interface Content {
-  id: string;
-  name: string;
-  stud: string;
-  description: string;
-  birthDate: Date;
-  breed: Breed;
-  supplierId: string;
-}
-
-export interface Breed {
-  id: string;
-  name: string;
-  type: string;
-}
-
 export interface Pageable {
   pageNumber: number;
   pageSize: number;

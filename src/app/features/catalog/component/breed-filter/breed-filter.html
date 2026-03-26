@@ -1,0 +1,68 @@
+<!-- ── Botón toggle solo visible en móvil ── -->
+<div class="md:hidden mb-2">
+    <button type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-base-300 bg-base-100 text-sm font-medium shadow-sm hover:bg-base-200 transition-colors w-full justify-between"
+        (click)="togglePanel()" (keydown.enter)="togglePanel()" (keydown.space)="togglePanel()">
+        <span class="flex items-center gap-2">
+            <!-- Ícono filtro -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+            </svg>
+            Filtrar por raza
+            @if (selected()) {
+            <span class="badge badge-success badge-sm text-white">1</span>
+            }
+        </span>
+
+        <!-- Chevron animado -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200"
+            [class.rotate-180]="isOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </button>
+</div>
+
+<!-- ── Panel de filtros ── -->
+<div class="bg-base-100 border border-base-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300"
+    [class.hidden]="!isOpen()" [class.md:block]="true">
+
+    <!-- Header del panel -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-base-200 bg-base-50">
+        <span class="text-sm font-semibold text-base-content">Raza</span>
+        <!-- @if (selected()) {
+        <button type="button" class="text-xs text-error hover:underline" (click)="clear()" (keydown.enter)="clear()"
+            (keydown.space)="clear()">
+            Limpiar
+        </button>
+        } -->
+    </div>
+
+    <!-- Opciones -->
+    <ul class="flex flex-col divide-y divide-base-200">
+        @for (breed of breeds(); track breed.id) {
+        <li>
+            <label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-base-200 transition-colors"
+                [class.bg-success/5]="selected() === breed.id">
+
+                <input type="radio" name="breed-filter" class="radio radio-success radio-sm" [value]="breed.id"
+                    [checked]="selected() === breed.id" (change)="select(breed)" />
+
+                <span class="text-sm transition-colors" [class.text-success]="selected() === breed.id"
+                    [class.font-semibold]="selected() === breed.id" [class.text-base-content]="selected() !== breed.id">
+                    {{ breed.name }}
+                </span>
+
+            </label>
+        </li>
+        }
+
+        @if (breeds()?.length === 0) {
+        <li class="px-4 py-6 text-center text-sm text-base-content/40">
+            Sin razas disponibles
+        </li>
+        }
+    </ul>
+
+</div>

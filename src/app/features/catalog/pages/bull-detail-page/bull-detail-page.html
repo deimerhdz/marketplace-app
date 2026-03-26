@@ -3,27 +3,28 @@
         <app-breadcrumb />
         <div class="grid items-start grid-cols-1 lg:grid-cols-5 gap-12 pt-6 rounded-sm">
             <div class="lg:col-span-3 w-full lg:sticky top-0 text-center">
-                <app-gallery />
+                <app-gallery [gallery]="gallery()" />
             </div>
 
             <div class="lg:col-span-2">
-                <h3 class="text-xl font-semibold text-slate-900">Acer Aspire Pro 12 | Laptop</h3>
+                <h3 class="text-xl font-semibold text-slate-900">{{bull()?.name}}</h3>
                 <div class="flex items-center space-x-1 mt-2">
-                    <h4 class="text-slate-500 text-base">500 Reviews</h4>
+                    <h4 class="text-slate-500 text-base">{{bull()?.breed?.name}}</h4>
                 </div>
 
-                <p class="text-sm text-slate-500 mt-4">The Acer Aspire Pro 12 is a sleek and powerful laptop, designed
-                    for productivity and performance. Perfect for professionals and multitaskers.</p>
+                <p class="text-sm text-slate-500 mt-4">{{bull()?.description}}</p>
 
                 <div class="flex flex-wrap gap-4 mt-8">
-                    <p class="text-slate-900 text-2xl font-semibold">$1200</p>
+                    <p class="text-slate-900 text-2xl font-semibold">{{ selectedStraw()?.price || 0 | currency: 'COP' :
+                        'symbol-narrow' : '1.0-0' }}</p>
 
                 </div>
 
                 <div class="mt-8">
                     <h3 class="text-xl font-bold text-slate-900">Seleccionar genética</h3>
                     <div class="flex flex-wrap gap-3 mt-4">
-
+                        <app-straw-selector [straws]="bull()?.straws!" size="btn-sm"
+                            (strawSelected)="selectStraw($event)" />
                     </div>
                 </div>
 

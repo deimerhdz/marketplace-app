@@ -7,7 +7,7 @@ import { Bull } from '@app/features/bulls/model/bull.model';
   imports: [Card],
   template: `
     <section class="flex flex-col gap-8 py-12">
-      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end justify-center">
         <ng-content />
       </div>
 

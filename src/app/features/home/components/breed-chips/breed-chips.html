@@ -1,0 +1,29 @@
+<div class="relative w-full flex justify-center">
+
+    <!-- Fade izquierda (hint de scroll) -->
+    <div
+        class="pointer-events-none absolute left-0 top-0 h-full w-6 bg-linear-to-r from-base-100 to-transparent z-10 md:hidden">
+    </div>
+
+    <!-- Chips -->
+    <div class="flex gap-2 overflow-x-auto md:flex-wrap px-1 pb-1
+              scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+
+        @for (breed of breeds(); track breed.id) {
+        <button type="button" class="shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 cursor-pointer whitespace-nowrap
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-success"
+            [class]="selected() === breed.id
+          ? 'bg-success border-success text-white shadow-md scale-105'
+          : 'bg-success/10 border-success/30 text-success hover:bg-success hover:border-success hover:text-white hover:scale-105'" (click)="select(breed)" (keydown.enter)="select(breed)" (keydown.space)="select(breed)">
+            {{ breed.name }}
+        </button>
+        }
+
+    </div>
+
+    <!-- Fade derecha (hint de scroll) -->
+    <div
+        class="pointer-events-none absolute right-0 top-0 h-full w-8 bg-linear-to-l from-base-100 to-transparent z-10 md:hidden">
+    </div>
+
+</div>

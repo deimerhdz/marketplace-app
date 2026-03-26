@@ -6,6 +6,8 @@ import { environment } from '@env/environment';
 import { Bull } from '../model/bull.model';
 import { Observable } from 'rxjs';
 import { CreateBull } from '../model/create-bull.model';
+import { CreateStraw } from '../model/createStraw.model';
+import { Straw } from '../model/straw.model';
 
 @Injectable({
   providedIn: 'root',
@@ -21,10 +23,42 @@ export class BullService {
   }
 
   create(newBull: CreateBull) {
-    return this._http.post(`${this._apiUrl}/${RoutesApp.bulls}`, newBull);
+    return this._http.post<Bull>(`${this._apiUrl}/${RoutesApp.bulls}`, newBull);
   }
 
   getById(id: string) {
     return this._http.get<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/${id}`);
+  }
+
+  updateImage(id: string, key: string, contentType: string) {
+    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/image/${id}`, {
+      key,
+      contentType,
+    });
+  }
+
+  getStraws(bullId: string) {
+    return this._http.get<Straw[]>(`${this._apiUrl}/${RoutesApp.straws}/${bullId}`);
+  }
+
+  createStraw(dto: CreateStraw): Observable<unknown> {
+    return this._http.post(`${this._apiUrl}/${RoutesApp.straws}`, dto);
+  }
+
+  getUploadUrl(filePath: string, filename: string, contentType: string) {
+    return this._http.post<{ url: string; file: string }>(
+      `${this._apiUrl}/files/pre-signed-url?filename=${filename}&contentType=${contentType}&filePath=${filePath}`,
+      {},
+    );
+  }
+
+  uploadFileToS3(url: string, file: File) {
+    return fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type,
+      },
+      body: file.slice(0, file.size, file.type),
+    });
   }
 }

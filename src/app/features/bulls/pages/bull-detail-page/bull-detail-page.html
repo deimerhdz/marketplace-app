@@ -23,10 +23,15 @@
             <div class="card-body items-center text-center gap-4">
                 <div class="avatar">
                     <div
-                        class="w-36 h-36 rounded-full ring ring-success ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-200 flex items-center justify-center">
+                        class="w-36 h-36 ring ring-success ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-200 flex items-center justify-center">
                         @if (photoPreview()) {
                         <img [src]="photoPreview()" alt="Foto del toro" class="object-cover w-full h-full" />
-                        } @else {
+                        }
+                        @else if (bull()?.image) {
+                        <img [src]="bull()?.image?.key | imagePipe" alt="Foto del toro"
+                            class="object-cover w-full h-full" />
+                        }
+                        @else {
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 opacity-30" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -39,8 +44,14 @@
                     <h3 class="text-lg font-bold">{{ bull()?.name }}</h3>
                     <p class="text-sm text-base-content/60">{{ bull()?.breed?.name }}</p>
                 </div>
-                <label class="btn btn-success btn-sm text-white w-full cursor-pointer">
-                    {{ photoPreview() ? 'Cambiar foto' : 'Agregar foto' }}
+                <label class="btn btn-success btn-sm text-white w-full cursor-pointer"
+                    [class.btn-disabled]="uploading()">
+                    @if (uploading()) {
+                    <span class="loading loading-spinner loading-sm"></span>
+                    Subiendo...
+                    } @else {
+                    {{ bull()?.image ? 'Cambiar foto' : 'Agregar foto' }}
+                    }
                     <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)" />
                 </label>
             </div>
@@ -74,37 +85,7 @@
 
         <!-- ── TAB: Información general ── -->
         @if (activeTab() === 'info') {
-        <div class="card bg-base-100 shadow-md border border-base-200">
-            <div class="card-body">
-                <h3 class="card-title text-lg mb-2">Información general</h3>
-                <div class="grid grid-cols-2 gap-x-8 gap-y-3">
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Nombre</p>
-                        <p class="font-semibold">{{ bull()?.name }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Stud</p>
-                        <p class="font-semibold">{{ bull()?.stud }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Raza</p>
-                        <p class="font-semibold">{{ bull()?.breed?.name }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Fecha de nacimiento</p>
-                        <p class="font-semibold">{{ bull()?.birthDate | date: 'dd/MM/yyyy' }}</p>
-                    </div>
-                    <div class="col-span-2">
-                        <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Descripción</p>
-                        <p class="font-semibold leading-relaxed">{{ bull()?.description }}</p>
-                    </div>
-                </div>
-                <div class="card-actions justify-end mt-4">
-                    <button class="btn btn-outline btn-sm">Editar</button>
-                    <button class="btn btn-error btn-sm text-white">Eliminar</button>
-                </div>
-            </div>
-        </div>
+        <app-bull-info [bull]="bull()!" />
         }
 
         <!-- ── TAB: Inventario / Stock ── -->
@@ -113,7 +94,9 @@
             <div class="card-body">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="card-title text-lg">Gestión de pajillas</h3>
-                    <button class="btn btn-success btn-sm text-white">+ Agregar pajilla</button>
+                    <button class="btn btn-success btn-sm text-white" (click)="openPajillaModal()">
+                        + Agregar pajilla
+                    </button>
                 </div>
 
                 <!-- Resumen rápido -->
@@ -124,12 +107,12 @@
                     </div>
                     <div class="stat bg-base-200 rounded-xl p-3">
                         <div class="stat-title text-xs">Tipos registrados</div>
-                        <div class="stat-value text-lg">{{ pajillas().length }}</div>
+                        <div class="stat-value text-lg">{{ straws().length }}</div>
                     </div>
                     <div class="stat bg-base-200 rounded-xl p-3">
                         <div class="stat-title text-xs">Stock crítico</div>
                         <div class="stat-value text-lg text-error">
-                            {{ pajillas().filter(isLowStock).length }}
+                            {{ straws().filter(isLowStock).length }}
                         </div>
                     </div>
                 </div>
@@ -148,20 +131,20 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (item of pajillas(); track item.id) {
+                            @for (item of straws(); track item.id) {
                             <tr [class.bg-red-50]="isLowStock(item)" [class.bg-opacity-5]="isLowStock(item)">
-                                <td class="font-mono text-sm">{{ item.code }}</td>
-                                <td>{{ item.name }}</td>
+                                <td class="font-mono text-sm">{{ item.sku }}</td>
+                                <td>{{ item.type }}</td>
                                 <td class="font-semibold">
                                     {{ item.price | currency: 'COP' : 'symbol' : '1.0-0' }}
                                 </td>
                                 <td>
                                     <span class="font-bold text-base" [class.text-error]="isLowStock(item)"
                                         [class.text-success]="!isLowStock(item)">
-                                        {{ item.stock }}
+                                        {{ item.inventory.stock }}
                                     </span>
                                 </td>
-                                <td class="text-base-content/60">{{ item.minStock }}</td>
+                                <td class="text-base-content/60">{{ item.inventory.minStock }}</td>
                                 <td>
                                     @if (isLowStock(item)) {
                                     <span class="badge badge-error badge-sm text-white">Stock crítico</span>
@@ -335,5 +318,85 @@
         }
 
     </div>
+</div>
+}
+
+
+
+@if (showStrawModal()) {
+<div class="modal modal-open">
+    <div class="modal-box max-w-lg">
+
+        <h3 class="font-bold text-lg mb-4">Nueva pajilla</h3>
+
+        <!-- Tipo -->
+        <div class="form-control mb-3">
+            <label class="label" for="type">
+                <span class="label-text font-medium">Tipo de pajilla</span>
+            </label>
+            <select class="select select-bordered w-full" id="type" [value]="strawForm().type"
+                (change)="updateForm({ type: $any($event.target).value })">
+                <option value="CONVENTIONAL">Convencional</option>
+                <option value="SEXED">Sexada hembra</option>
+                <option value="SEXED_MALE">Sexada macho</option>
+            </select>
+        </div>
+
+        <!-- Precio -->
+        <div class="form-control mb-3">
+            <label class="label" for="price">
+                <span class="label-text font-medium">Precio (COP)</span>
+            </label>
+            <input type="number" id="price" class="input input-bordered w-full" placeholder="Ej: 40000"
+                [value]="strawForm().price" (input)="updateForm({ price: +$any($event.target).value })" />
+        </div>
+
+        <!-- Pedido mínimo -->
+        <div class="form-control mb-3">
+            <label class="label" for="minOrder">
+                <span class="label-text font-medium">Pedido mínimo (dosis)</span></label>
+            <input type="number" class="input input-bordered w-full" placeholder="Ej: 5" min="1"
+                [value]="strawForm().minOrder" (input)="updateForm({ minOrder: +$any($event.target).value })" />
+        </div>
+
+        <!-- Stock e inventario en dos columnas -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="form-control">
+                <label class="label" for="stock">
+                    <span class="label-text font-medium">Stock inicial</span>
+                </label>
+                <input type="number" id="stock" class="input input-bordered w-full" placeholder="Ej: 200" min="0"
+                    [value]="strawForm().inventory.stock"
+                    (input)="updateInventory({ stock: +$any($event.target).value })" />
+            </div>
+            <div class="form-control">
+                <label class="label" for="minStock"><span class="label-text font-medium">Stock mínimo</span></label>
+                <input type="number" id="minStock" class="input input-bordered w-full" placeholder="Ej: 25" min="0"
+                    [value]="strawForm().inventory.minStock"
+                    (input)="updateInventory({ minStock: +$any($event.target).value })" />
+            </div>
+        </div>
+
+        <!-- Preview del JSON que se enviará -->
+        <div class="bg-base-200 rounded-lg p-3 mb-4 text-xs font-mono text-base-content/60 overflow-auto max-h-28">
+            {{ strawForm() | json }}
+        </div>
+
+        <div class="modal-action">
+            <button class="btn btn-ghost" (click)="closeStrawModal()" [disabled]="savingStraw()">
+                Cancelar
+            </button>
+            <button class="btn btn-success text-white" (click)="savePajilla()" [disabled]="savingStraw()">
+                @if (savingStraw()) {
+                <span class="loading loading-spinner loading-sm"></span> Guardando...
+                } @else {
+                Guardar pajilla
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- Backdrop para cerrar -->
+    <div class="modal-backdrop" role="button" tabindex="0" (click)="closeStrawModal()"></div>
 </div>
 }
