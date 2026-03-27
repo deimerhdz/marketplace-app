@@ -1,10 +1,18 @@
 import { HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { URL_AUTH_CONFIRM_PASS, URL_AUTH_REFRESH, URL_AUTH_SIGNIN } from '@app/core/const/api';
+import {
+  URL_AUTH_CONFIRM_PASS,
+  URL_AUTH_REFRESH,
+  URL_AUTH_SIGNIN,
+  URL_BREEDS,
+  URL_CATALOG,
+} from '@app/core/const/api';
 import { RefreshTokenManageService } from '../services/refreshToken.service';
 import { EMPTY } from 'rxjs';
 import { Router } from '@angular/router';
-const PUBLIC_URLS = [URL_AUTH_SIGNIN, URL_AUTH_CONFIRM_PASS, '/breeds', '/catalog', '/bulls'];
+
+const PUBLIC_URLS = [URL_AUTH_SIGNIN, URL_AUTH_CONFIRM_PASS, URL_BREEDS, URL_CATALOG];
+
 export const ApiInterceptor = (request: HttpRequest<unknown>, next: HttpHandlerFn) => {
   const isPublic = PUBLIC_URLS.some((url) => request.url.includes(url));
   if (isPublic) return next(request);

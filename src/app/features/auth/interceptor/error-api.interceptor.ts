@@ -33,6 +33,7 @@ export const ErrorApiInterceptor = (request: HttpRequest<unknown>, next: HttpHan
           }),
           catchError(() => {
             console.log('*******ERROR EN EL REFRESH TOKEN********');
+            authService.logout();
             router.navigateByUrl('/');
             return EMPTY;
           }),
