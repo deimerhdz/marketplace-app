@@ -13,6 +13,8 @@ import {
 import { SignIn } from '../../model/signIn.model';
 import { AuthService } from '../../services/auth.service';
 import { ChangePassword } from '../../model/auth.response';
+import { PasswordInput } from '@app/shared/ui/password-input/password-input';
+import { EmailInput } from '@app/shared/ui/email-input/email-input';
 
 // Validador personalizado para contraseñas coincidentes
 function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -23,7 +25,7 @@ function passwordsMatchValidator(control: AbstractControl): ValidationErrors | n
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, PasswordInput, EmailInput],
   templateUrl: './login-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -32,9 +34,12 @@ export default class LoginPage {
   private _formBuilder: FormBuilder = inject(FormBuilder);
   private _authService = inject(AuthService);
   public showNewPasswordForm = signal(false);
-
   public form: FormGroup = this._formBuilder.nonNullable.group<SignIn>({
-    email: new FormControl('', [Validators.email, Validators.required]),
+    email: new FormControl('', [
+      Validators.email,
+      Validators.required,
+      Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
+    ]),
     password: new FormControl('', [Validators.required]),
   });
 
@@ -55,17 +60,6 @@ export default class LoginPage {
     return this.form.get('email')!;
   }
 
-  get passwordControl() {
-    return this.form.get('password')!;
-  }
-
-  get newPasswordControl() {
-    return this.newPasswordForm.get('newPassword')!;
-  }
-  get confirmPasswordControl() {
-    return this.newPasswordForm.get('confirmPassword')!;
-  }
-
   login() {
     this._router.navigateByUrl(`${RoutesApp.admin}/${RoutesApp.dashboard}`);
   }
@@ -73,6 +67,7 @@ export default class LoginPage {
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+
       return;
     }
 
@@ -89,13 +84,19 @@ export default class LoginPage {
           this.showNewPasswordForm.set(true);
           return;
         }
-
-        this.hasError.set(true);
-        setTimeout(() => {
-          this.hasError.set(false);
-        }, 2000);
+        this.setError();
+      },
+      error: () => {
+        this.setError();
       },
     });
+  }
+
+  setError() {
+    this.hasError.set(true);
+    setTimeout(() => {
+      this.hasError.set(false);
+    }, 2000);
   }
 
   submitNewPassword() {

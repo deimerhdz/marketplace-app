@@ -25,11 +25,11 @@ export default class HomePage implements OnInit {
 
   ngOnInit(): void {
     this.getBreeds();
-    this._homeService.getFeaturedBulls().subscribe({
-      next: (response) => {
-        this.featuredBull.set(response);
-      },
-    });
+    // this._homeService.getFeaturedBulls().subscribe({
+    //   next: (response) => {
+    //     this.featuredBull.set(response);
+    //   },
+    // });
   }
 
   navigateToCatalog(breed: string) {
@@ -37,9 +37,16 @@ export default class HomePage implements OnInit {
   }
 
   getBreeds() {
+    console.log('hol');
+
     this._breedService.getBreeds().subscribe({
       next: (response) => {
+        console.log(response);
+
         this.breeds.set(response);
+      },
+      error: (err) => {
+        console.error('Error en getBreeds:', err); // 👈 ¿hay algún error silencioso?
       },
     });
   }

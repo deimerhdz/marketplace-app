@@ -12,36 +12,11 @@
                 </div>
                 }
 
-
                 <form [formGroup]="form" (submit)="submit()" class="space-y-6">
-                    <div>
-                        <label for="email" class="block text-sm/6 font-medium">Correo electrónico</label>
-                        <div class="mt-2">
-                            <input type="text" formControlName="email" placeholder="Correo electrónico"
-                                class="input w-full" id="email" type="email" name="email" required />
-                        </div>
-                        <!-- 👇 Errores del campo email -->
-                        @if (emailControl.touched) {
-                        @if (emailControl.hasError('required')) {
-                        <p class="mt-1 text-xs text-red-600">El correo electrónico es requerido.</p>
-                        } @else if (emailControl.hasError('email')) {
-                        <p class="mt-1 text-xs text-red-600">Ingresa un correo electrónico válido.</p>
-                        }
-                        }
-                    </div>
-
-                    <div>
-                        <div class="flex items-center justify-between">
-                            <label for="password" class="block text-sm/6 font-medium">Contraseña</label>
-                        </div>
-                        <div class="mt-2">
-                            <input type="text" formControlName="password" placeholder="Contraseña" class="input w-full"
-                                id="password" type="password" name="password" required />
-                        </div>
-                        @if (passwordControl.touched && passwordControl.hasError('required')) {
-                        <p class="mt-1 text-xs text-red-600">La contraseña es requerida.</p>
-                        }
-                    </div>
+                    <app-email-input formControlName="email" label="Correo electrónico" placeholder="Correo electrónico"
+                        [control]="form.get('email')" />
+                    <app-password-input formControlName="password" label="Contraseña" id="password"
+                        placeholder="*******" [control]="form.get('password')" />
 
                     <div>
                         <button type="submit" class="btn btn-success text-white  w-full">
@@ -67,43 +42,22 @@
                 }
 
                 <form [formGroup]="newPasswordForm" (submit)="submitNewPassword()" class="space-y-6">
+
                     <!-- Email (solo lectura, prellenado) -->
-                    <div>
-                        <label for="new-email" class="block text-sm/6 font-medium">Correo electrónico</label>
-                        <div class="mt-2">
-                            <input formControlName="email" id="new-email" type="email"
-                                class="input w-full bg-gray-100 cursor-not-allowed" readonly />
-                        </div>
-                    </div>
-
+                    <app-email-input label="Correo electrónico" formControlName="email" [readonly]="true"
+                        [control]="newPasswordForm.get('email')" />
                     <!-- Nueva contraseña -->
-                    <div>
-                        <label for="newPassword" class="block text-sm/6 font-medium">Nueva contraseña</label>
-                        <div class="mt-2">
-                            <input formControlName="newPassword" id="newPassword" type="password"
-                                placeholder="Nueva contraseña" class="input w-full" required />
-                        </div>
-                        @if (newPasswordControl.touched && newPasswordControl.hasError('required')) {
-                        <p class="mt-1 text-xs text-red-600">La nueva contraseña es requerida.</p>
-                        }
-                    </div>
-
+                    <app-password-input formControlName="newPassword" label="Nueva contraseña" id="newPassword"
+                        placeholder="Nueva contraseña" [control]="newPasswordForm.get('newPassword')" />
                     <!-- Confirmar nueva contraseña -->
                     <div>
-                        <label for="confirmPassword" class="block text-sm/6 font-medium">Confirmar contraseña</label>
-                        <div class="mt-2">
-                            <input formControlName="confirmPassword" id="confirmPassword" type="password"
-                                placeholder="Confirmar contraseña" class="input w-full" required />
-                        </div>
-                        @if (confirmPasswordControl.touched) {
-                        @if (confirmPasswordControl.hasError('required')) {
-                        <p class="mt-1 text-xs text-red-600">La confirmación es requerida.</p>
-                        } @else if (newPasswordForm.hasError('passwordsMismatch')) {
+                        <app-password-input formControlName="confirmPassword" label="Confirmar contraseña"
+                            id="confirmPassword" placeholder="Confirmar contraseña"
+                            [control]="newPasswordForm.get('confirmPassword')" />
+                        @if (newPasswordForm.get('confirmPassword')?.hasError('passwordsMismatch')) {
                         <p class="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p>
                         }
-                        }
                     </div>
-
                     <div>
                         <button type="submit" class="btn btn-success  text-white w-full">Guardar contraseña</button>
                     </div>

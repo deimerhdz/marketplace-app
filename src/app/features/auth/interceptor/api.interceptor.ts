@@ -4,14 +4,10 @@ import { URL_AUTH_CONFIRM_PASS, URL_AUTH_REFRESH, URL_AUTH_SIGNIN } from '@app/c
 import { RefreshTokenManageService } from '../services/refreshToken.service';
 import { EMPTY } from 'rxjs';
 import { Router } from '@angular/router';
-
+const PUBLIC_URLS = [URL_AUTH_SIGNIN, URL_AUTH_CONFIRM_PASS, '/breeds', '/catalog', '/bulls'];
 export const ApiInterceptor = (request: HttpRequest<unknown>, next: HttpHandlerFn) => {
-  if (request.url === URL_AUTH_SIGNIN) {
-    return next(request);
-  }
-  if (request.url === URL_AUTH_CONFIRM_PASS) {
-    return next(request);
-  }
+  const isPublic = PUBLIC_URLS.some((url) => request.url.includes(url));
+  if (isPublic) return next(request);
 
   const refreshTokenService = inject(RefreshTokenManageService);
 

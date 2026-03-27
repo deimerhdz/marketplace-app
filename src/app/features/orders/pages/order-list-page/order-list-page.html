@@ -1,37 +1,256 @@
-<h2 class="text-2xl font-bold mb-4">Ordenes </h2>
-<div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-    <table class="table">
-        <!-- head -->
-        <thead>
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Job</th>
-                <th>Favorite Color</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- row 1 -->
-            <tr>
-                <th>1</th>
-                <td>Cy Ganderton</td>
-                <td>Quality Control Specialist</td>
-                <td>Blue</td>
-            </tr>
-            <!-- row 2 -->
-            <tr>
-                <th>2</th>
-                <td>Hart Hagerty</td>
-                <td>Desktop Support Technician</td>
-                <td>Purple</td>
-            </tr>
-            <!-- row 3 -->
-            <tr>
-                <th>3</th>
-                <td>Brice Swyre</td>
-                <td>Tax Accountant</td>
-                <td>Red</td>
-            </tr>
-        </tbody>
-    </table>
+<!-- ── Orders Page ── -->
+<div class="flex flex-col gap-6 p-4 md:p-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+            <h1 class="text-2xl font-bold">Órdenes recibidas</h1>
+            <p class="text-sm text-base-content/50 mt-1">Gestiona y actualiza el estado de tus pedidos</p>
+        </div>
+        <div class="badge badge-success badge-lg text-white font-semibold">
+            {{ orders().length }} órdenes
+        </div>
+    </div>
+
+    <!-- ── Tabla desktop ── -->
+    <div class="hidden md:block card bg-base-100 border border-base-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table table-sm">
+                <thead class="bg-base-200/60 text-xs uppercase tracking-wide text-base-content/50">
+                    <tr>
+                        <th>Orden</th>
+                        <th>Cliente</th>
+                        <th>Dirección de envío</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (order of orders(); track order.id) {
+                    <tr class="hover:bg-base-200/30 transition-colors border-base-200">
+                        <!-- ID -->
+                        <td>
+                            <span class="font-mono text-xs text-base-content/60">
+                                #{{ order.id.substring(0, 8).toUpperCase() }}
+                            </span>
+                        </td>
+                        <!-- Cliente -->
+                        <td>
+                            <span class="font-mono text-xs text-base-content/50">
+                                {{ order.customerId.substring(0, 8) }}...
+                            </span>
+                        </td>
+                        <!-- Dirección -->
+                        <td>
+                            <div class="flex flex-col">
+                                <span class="text-sm">{{ order.shippingAddress.city }}</span>
+                                <span class="text-xs text-base-content/50">{{ order.shippingAddress.state }}</span>
+                            </div>
+                        </td>
+                        <!-- Total -->
+                        <td class="font-bold">
+                            {{ order.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </td>
+                        <!-- Estado -->
+                        <td>
+                            <span class="badge badge-sm text-white font-medium"
+                                [class]="statusConfig(order.orderStatus).badge">
+                                {{ statusConfig(order.orderStatus).label }}
+                            </span>
+                        </td>
+                        <!-- Fecha -->
+                        <td class="text-xs text-base-content/50">
+                            {{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                        </td>
+                        <!-- Acción -->
+                        <td>
+                            <button class="btn btn-ghost btn-xs text-success hover:bg-success/10"
+                                (click)="openModal(order)" (keydown.enter)="openModal(order)">
+                                Gestionar
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (orders().length === 0) {
+            <div class="flex flex-col items-center justify-center py-16 text-base-content/30 gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <p class="text-sm">No hay órdenes recibidas</p>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- ── Cards móvil ── -->
+    <div class="flex flex-col gap-3 md:hidden">
+        @for (order of orders(); track order.id) {
+        <div class="card bg-base-100 border border-base-200 shadow-sm">
+            <div class="card-body p-4 gap-3">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <span class="font-mono text-xs text-base-content/50">
+                            #{{ order.id.substring(0, 8).toUpperCase() }}
+                        </span>
+                        <p class="font-bold text-lg mt-0.5">
+                            {{ order.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </p>
+                    </div>
+                    <span class="badge badge-sm text-white font-medium" [class]="statusConfig(order.orderStatus).badge">
+                        {{ statusConfig(order.orderStatus).label }}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-1.5 text-sm text-base-content/60">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {{ order.shippingAddress.city }}, {{ order.shippingAddress.state }}
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-base-content/40">
+                        {{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                    </span>
+                    <button class="btn btn-success btn-xs text-white" (click)="openModal(order)"
+                        (keydown.enter)="openModal(order)">
+                        Gestionar
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
 </div>
+
+<!-- ══ Modal gestión de orden ══ -->
+@if (showModal() && selectedOrder()) {
+<div class="modal modal-open">
+    <div class="modal-box max-w-2xl w-full">
+
+        <!-- Header modal -->
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <h3 class="font-bold text-lg">Gestionar orden</h3>
+                <p class="text-xs font-mono text-base-content/50 mt-0.5">
+                    #{{ selectedOrder()!.id.substring(0, 8).toUpperCase() }}
+                </p>
+            </div>
+            <button class="btn btn-ghost btn-sm btn-circle" (click)="closeModal()"
+                (keydown.enter)="closeModal()">✕</button>
+        </div>
+
+        <div class="divider my-2"></div>
+
+        <!-- Info de envío -->
+        <div class="bg-base-200/50 rounded-xl p-3 mb-4 flex flex-col gap-1">
+            <p class="text-xs font-medium text-base-content/50 uppercase tracking-wide">Dirección de envío</p>
+            <p class="text-sm font-medium">{{ selectedOrder()!.shippingAddress.street }}</p>
+            <p class="text-xs text-base-content/60">
+                {{ selectedOrder()!.shippingAddress.city }},
+                {{ selectedOrder()!.shippingAddress.state }},
+                {{ selectedOrder()!.shippingAddress.country }}
+            </p>
+        </div>
+
+        <!-- Items de la orden -->
+        <div class="mb-4">
+            <p class="text-xs font-medium text-base-content/50 uppercase tracking-wide mb-2">Productos</p>
+            <div class="overflow-x-auto rounded-xl border border-base-200">
+                <table class="table table-sm">
+                    <thead class="bg-base-200/60 text-xs">
+                        <tr>
+                            <th>Toro / SKU</th>
+                            <th>Tipo</th>
+                            <th class="text-right">Cant.</th>
+                            <th class="text-right">Precio</th>
+                            <th class="text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of selectedItems(); track item.id) {
+                        <tr>
+                            <td>
+                                <div class="flex flex-col">
+                                    <span class="font-medium text-sm">{{ item.bullName }}</span>
+                                    <span class="font-mono text-xs text-base-content/50">{{ item.sku }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-ghost badge-sm">{{ item.type }}</span>
+                            </td>
+                            <td class="text-right font-semibold">{{ item.quantity }}</td>
+                            <td class="text-right text-sm">
+                                {{ item.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                            </td>
+                            <td class="text-right font-bold text-success">
+                                {{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="text-right font-bold text-sm">Total</td>
+                            <td class="text-right font-bold text-success text-base">
+                                {{ selectedOrder()!.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cambiar estado -->
+        <div class="bg-base-200/40 rounded-xl p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-semibold">Estado actual</p>
+                <span class="badge badge-sm text-white font-medium"
+                    [class]="statusConfig(selectedOrder()!.orderStatus).badge">
+                    {{ statusConfig(selectedOrder()!.orderStatus).label }}
+                </span>
+            </div>
+
+            <div class="form-control">
+                <label class="label py-1" for="">
+                    <span class="label-text text-sm font-medium">Cambiar a</span>
+                </label>
+                <select class="select select-bordered select-sm w-full" [ngModel]="newStatus()"
+                    (ngModelChange)="newStatus.set($event)">
+                    @for (status of statuses; track status) {
+                    <option [value]="status">{{ statusConfig(status).label }}</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="modal-action mt-4">
+            <button class="btn btn-ghost btn-sm" (click)="closeModal()" [disabled]="saving()">
+                Cancelar
+            </button>
+            <button class="btn btn-success btn-sm text-white" (click)="updateStatus()"
+                [disabled]="saving() || newStatus() === selectedOrder()!.orderStatus">
+                @if (saving()) {
+                <span class="loading loading-spinner loading-xs"></span> Guardando...
+                } @else {
+                Actualizar estado
+                }
+            </button>
+        </div>
+    </div>
+    <div class="modal-backdrop" role="button" tabindex="0" (click)="closeModal()" (keydown.enter)="closeModal()">
+    </div>
+</div>
+}
