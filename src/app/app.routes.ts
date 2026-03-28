@@ -37,6 +37,10 @@ export const routes: Routes = [
       { path: RoutesApp.orders, loadChildren: () => import(`@features/orders/orders.routes`) },
       { path: RoutesApp.bulls, loadChildren: () => import(`@features/bulls/bulls.routes`) },
       {
+        path: RoutesApp.users,
+        loadChildren: () => import(`@app/features/users/users.routes`),
+      },
+      {
         path: RoutesApp.settings,
         loadChildren: () => import(`@features/settings/settings.routes`),
       },

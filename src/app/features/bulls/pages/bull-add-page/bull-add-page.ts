@@ -67,7 +67,8 @@ export default class BullAddPage implements OnInit {
       },
     });
   }
-  newBull() {
+
+  back() {
     this._router.navigateByUrl(`/${RoutesApp.admin}/${RoutesApp.bulls}`);
   }
 }

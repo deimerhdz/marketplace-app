@@ -20,6 +20,7 @@ interface MenuSidebar {
           @for (item of menu(); track item.title) {
             <li [routerLink]="item.route" routerLinkActive="menu-active">
               <button class="" [attr.data-tip]="item.title" (click)="closeDrawer()">
+                <i [class]="item.icon"></i>
                 <span>{{ item.title }}</span>
               </button>
             </li>
@@ -43,6 +44,11 @@ export class Sidebar {
         title: 'Ordenes',
         route: `/${RoutesApp.admin}/${RoutesApp.orders}`,
         icon: 'fa-solid fa-clipboard-list',
+      },
+      {
+        title: 'Usuarios',
+        route: `/${RoutesApp.admin}/${RoutesApp.users}`,
+        icon: 'fa-solid fa-users',
       },
       {
         title: 'Toros',

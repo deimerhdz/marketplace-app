@@ -3,7 +3,31 @@ import Swal, { SweetAlertIcon } from 'sweetalert2';
 
 @Injectable({ providedIn: 'root' })
 export class AlertMessageService {
-  message(title: string, message: string, icon?: SweetAlertIcon) {
-    Swal.fire({ icon, title, text: message });
+  private showAlert(title: string, message: string, icon: SweetAlertIcon = 'info') {
+    Swal.fire({
+      title,
+      text: message,
+      icon,
+    });
+  }
+
+  message(title: string, message: string, icon: SweetAlertIcon = 'info') {
+    this.showAlert(title, message, icon);
+  }
+
+  success(message: string) {
+    this.showAlert('Éxito', message, 'success');
+  }
+
+  error(message: string) {
+    this.showAlert('Error', message, 'error');
+  }
+
+  warning(message: string) {
+    this.showAlert('Advertencia', message, 'warning');
+  }
+
+  info(message: string) {
+    this.showAlert('Información', message, 'info');
   }
 }

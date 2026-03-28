@@ -7,6 +7,7 @@ import { environment } from '@env/environment';
 import { UserAuth } from '../model/userAuth.model';
 import { LocalStorageService } from '@app/core/services/local-storage.service';
 import { KEY_STORAGE } from '@app/core/enums/storage.enum';
+import { SingUp } from '../model/signUp.model';
 
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 @Injectable({
@@ -43,6 +44,13 @@ export class AuthService {
   // ─── Login ───────────────────────────────────────────────────────────────
   login(credentials: SignIn): Observable<AuthResponse> {
     return this._http.post<AuthResponse>(`${this._apiUrl}/auth/login`, credentials).pipe(
+      map((response) => this.handleAuthSuccess(response)),
+      catchError((error) => this.handleAuthError(error)),
+    );
+  }
+
+  register(credentials: SingUp): Observable<AuthResponse> {
+    return this._http.post<AuthResponse>(`${this._apiUrl}/auth/register`, credentials).pipe(
       map((response) => this.handleAuthSuccess(response)),
       catchError((error) => this.handleAuthError(error)),
     );

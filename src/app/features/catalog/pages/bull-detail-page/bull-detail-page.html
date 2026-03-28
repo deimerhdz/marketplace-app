@@ -15,10 +15,27 @@
                 <p class="text-sm text-slate-500 mt-4">{{bull()?.description}}</p>
 
                 <div class="flex flex-wrap gap-4 mt-8">
-                    <p class="text-slate-900 text-2xl font-semibold">{{ selectedStraw()?.price || 0 | currency: 'COP' :
-                        'symbol-narrow' : '1.0-0' }}</p>
-
+                    <div>
+                        <p class="text-slate-900 text-2xl font-semibold">
+                            {{ totalPrice() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </p>
+                        @if(selectedStraw()) {
+                        <p class="text-slate-400 text-sm mt-1">
+                            {{ selectedStraw()!.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} × {{ quantity()
+                            }} pajillas
+                        </p>
+                        }
+                    </div>
                 </div>
+                @if(selectedStraw()) {
+                <div class="mt-6">
+                    <h3 class="text-sm font-medium text-slate-700 mb-2">
+                        Cantidad
+                        <span class="text-slate-400">(mín. {{ selectedStraw()!.minOrder }})</span>
+                    </h3>
+                    <app-quantity-selector [min]="selectedStraw()!.minOrder" [(quantity)]="quantity" />
+                </div>
+                }
 
                 <div class="mt-8">
                     <h3 class="text-xl font-bold text-slate-900">Seleccionar genética</h3>
@@ -31,7 +48,7 @@
                 <div class="flex gap-4 mt-12 max-w-md">
                     <button type="button" class="btn btn-success  shrink text-white btn-block"
                         (click)="checkout()">Comprar ahora</button>
-                    <button type="button" class="btn   shrink btn-block">Agregar al carrito</button>
+                    <!-- <button type="button" class="btn   shrink btn-block">Agregar al carrito</button> -->
                 </div>
             </div>
         </div>

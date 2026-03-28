@@ -1,10 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Paginated } from '@app/core/model/paginated-response.model';
 import { RoutesApp } from '@app/shared/const/routes.app';
 import { environment } from '@env/environment';
 import { Bull } from '../model/bull.model';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { CreateBull } from '../model/create-bull.model';
 import { CreateStraw } from '../model/createStraw.model';
 import { Straw } from '../model/straw.model';
@@ -42,7 +42,9 @@ export class BullService {
   }
 
   createStraw(dto: CreateStraw): Observable<unknown> {
-    return this._http.post(`${this._apiUrl}/${RoutesApp.straws}`, dto);
+    return this._http
+      .post(`${this._apiUrl}/${RoutesApp.straws}`, dto)
+      .pipe(catchError((error: HttpErrorResponse) => throwError(() => error.error.error)));
   }
 
   getUploadUrl(filePath: string, filename: string, contentType: string) {

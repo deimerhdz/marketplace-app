@@ -1,34 +1,44 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  signal,
+  OnInit,
+  computed,
+} from '@angular/core';
 import { Bull } from '../../model/bull.model';
-import { CurrencyPipe, JsonPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { RoutesApp } from '@app/shared/const/routes.app';
 import { BullService } from '../../service/bull.service';
-import { MediaFile } from '@app/core/model/media-file.model';
 import { BullInfo } from '../../components/bull-info/bull-info';
 import { CreateStraw } from '../../model/createStraw.model';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Straw } from '../../model/straw.model';
 import { ImagePipe } from '@app/shared/pipe/image.pipe';
-
-export interface Pajilla {
-  id: number;
-  code: string;
-  name: string;
-  price: number;
-  stock: number;
-  minStock: number;
-}
-
+import { AlertMessageService } from '@app/shared/services/alert-message.service';
+import { UploadGallery } from '@app/shared/ui/upload-gallery/upload-gallery';
+import { UploadVideo } from '@app/shared/ui/upload-video/upload-video';
+import { UploadFile } from '@app/shared/ui/upload-file/upload-file';
+import { Table, TableAction, TableColumn, TableFooter } from '@app/shared/ui/table/table';
 @Component({
   selector: 'app-bull-detail-page',
-  imports: [BullInfo, ImagePipe, CurrencyPipe, JsonPipe, FormsModule],
+  imports: [
+    BullInfo,
+    ImagePipe,
+    UploadVideo,
+    UploadFile,
+    UploadGallery,
+    Table,
+    ReactiveFormsModule,
+  ],
   templateUrl: './bull-detail-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class BullDetailPage implements OnInit {
   private _router = inject(Router);
-  private bullService = inject(BullService);
+  private _bullService = inject(BullService);
+  private _alertMessageService = inject(AlertMessageService);
 
   id = input.required<string>();
   bull = signal<Bull | null>(null);
@@ -36,32 +46,67 @@ export default class BullDetailPage implements OnInit {
   error = signal<string | null>(null);
 
   photoPreview = signal<string | null>(null);
-  // Galería de imágenes
-  galleryImages = signal<MediaFile[]>([]);
-  galleryPreviews = signal<string[]>([]);
 
-  // Video
-  videoPreview = signal<string | null>(null);
-  videoFile = signal<File | null>(null);
-
-  // Evaluación genética
-  geneticFile = signal<File | null>(null);
-  geneticFileName = signal<string | null>(null);
+  //formulario
+  private _fb = inject(FormBuilder);
 
   // Inventario (mock)
   straws = signal<Straw[]>([]);
 
   // ── Modal de agregar pajilla ──
-  showStrawModal = signal(false);
+  strawModal = signal<{ mode: 'create' | 'edit'; straw?: Straw } | null>(null);
+  strawForm!: FormGroup;
   savingStraw = signal(false);
 
-  strawForm = signal<CreateStraw>({
-    bullId: '',
-    price: 0,
-    type: 'CONVENTIONAL',
-    minOrder: 1,
-    inventory: { stock: 0, minStock: 0 },
+  isEditing = computed(() => {
+    return this.strawModal()?.mode === 'edit';
   });
+  modalTitle = computed(() => {
+    return this.isEditing() ? 'Editar pajilla' : 'Nueva pajilla';
+  });
+  saveLabel = computed(() => {
+    return this.isEditing() ? 'Guardar cambios' : 'Guardar pajilla';
+  });
+
+  //table config
+  columns: TableColumn<Straw>[] = [
+    { key: 'sku', label: 'Código', type: 'mono' },
+    { key: 'type', label: 'Descripción', type: 'text' },
+    { key: 'price', label: 'Precio', type: 'currency', currency: 'COP' },
+    { key: 'minOrder', label: 'Orden minima', type: 'text' },
+    {
+      key: 'inventory.stock',
+      label: 'Stock actual',
+      type: 'stock',
+      valueFn: (row) => row.inventory.stock,
+      criticalFn: (row) => this.isLowStock(row),
+    },
+    {
+      key: 'inventory.minStock',
+      label: 'Stock mínimo',
+      valueFn: (row) => row.inventory.minStock,
+    },
+    {
+      key: 'status',
+      label: 'Estado',
+      type: 'badge',
+      badgeFn: (row) =>
+        this.isLowStock(row)
+          ? { text: 'Stock crítico', variant: 'error' }
+          : { text: 'OK', variant: 'success' },
+    },
+  ];
+
+  actions: TableAction<Straw>[] = [
+    { icon: '✏️', title: 'Editar', onClick: (row) => this.openEditModal(row) },
+  ];
+
+  footer = computed<TableFooter>(() => ({
+    label: 'Total en stock:',
+    value: `${this.totalPajillas} uds.`,
+    colspanBefore: 3,
+    colspanAfter: 3,
+  }));
 
   uploading = signal(false);
 
@@ -69,44 +114,65 @@ export default class BullDetailPage implements OnInit {
     this.loadBull();
     this.loadStraws();
   }
-  openPajillaModal() {
-    this.strawForm.set({
-      bullId: this.id(),
-      price: 0,
-      type: 'CONVENTIONAL',
-      minOrder: 1,
-      inventory: { stock: 0, minStock: 0 },
+
+  openCreateModal() {
+    this.strawForm = this._fb.group({
+      type: ['CONVENTIONAL', Validators.required],
+      price: [0, [Validators.required, Validators.min(0)]],
+      minOrder: [1, [Validators.required, Validators.min(1)]],
+      stock: [0, [Validators.required, Validators.min(0)]],
+      minStock: [0, [Validators.required, Validators.min(0)]],
     });
-    this.showStrawModal.set(true);
+    this.strawModal.set({ mode: 'create' });
   }
 
-  closeStrawModal() {
-    this.showStrawModal.set(false);
+  openEditModal(straw: Straw) {
+    this.strawForm = this._fb.group({
+      price: [straw.price, [Validators.required, Validators.min(0)]],
+      stock: [straw.inventory.stock, [Validators.required, Validators.min(0)]],
+      minStock: [straw.inventory.minStock, [Validators.required, Validators.min(0)]],
+    });
+    this.strawModal.set({ mode: 'edit', straw });
+  }
+  closeModal() {
+    this.strawModal.set(null);
   }
 
-  updateForm(partial: Partial<CreateStraw>) {
-    this.strawForm.update((f) => ({ ...f, ...partial }));
-  }
-
-  updateInventory(partial: Partial<CreateStraw['inventory']>) {
-    this.strawForm.update((f) => ({
-      ...f,
-      inventory: { ...f.inventory, ...partial },
-    }));
-  }
-
-  savePajilla() {
+  saveStraw() {
+    if (this.strawForm.invalid) {
+      this.strawForm.markAllAsTouched();
+      return;
+    }
     this.savingStraw.set(true);
-    this.bullService.createStraw(this.strawForm()).subscribe({
-      next: () => {
-        this.savingStraw.set(false);
-        this.closeStrawModal();
-        this.loadStraws(); // refresca datos
-      },
-      error: () => {
-        this.savingStraw.set(false);
-      },
-    });
+
+    if (this.isEditing()) {
+      // lógica de edición (ajusta según tu servicio)
+      const { price, stock, minStock } = this.strawForm.value;
+      console.log('Editando:', { price, stock, minStock });
+      this.savingStraw.set(false);
+      this.closeModal();
+    } else {
+      const { type, price, minOrder, stock, minStock } = this.strawForm.value;
+      const payload: CreateStraw = {
+        bullId: this.id(),
+        type,
+        price,
+        minOrder,
+        inventory: { stock, minStock },
+      };
+      this._bullService.createStraw(payload).subscribe({
+        next: () => {
+          this.savingStraw.set(false);
+          this._alertMessageService.success('La pajilla ha sido agregada.');
+          this.closeModal();
+          this.loadStraws();
+        },
+        error: (error) => {
+          this._alertMessageService.warning(error);
+          this.savingStraw.set(false);
+        },
+      });
+    }
   }
 
   isLowStock(item: Straw): boolean {
@@ -127,32 +193,32 @@ export default class BullDetailPage implements OnInit {
     reader.readAsDataURL(file);
     const path = `supplier/bull/${this.id()}/`;
     // 1. Pedir URL prefirmada
-    this.bullService.getUploadUrl(path, file.name, file.type).subscribe({
+    this._bullService.getUploadUrl(path, file.name, file.type).subscribe({
       next: async ({ url }) => {
         try {
-          const response = await this.bullService.uploadFileToS3(url, file);
-          console.log(' Subido correctamente', response);
-          this.uploading.set(false);
+          await this._bullService.uploadFileToS3(url, file);
           const cleanUrl = url.split('?')[0];
           const key = cleanUrl.split('.com/')[1];
-          this.bullService.updateImage(this.id(), key, file.type).subscribe({
-            next: (bull) => {
-              console.log(' Imagen actualizada', bull);
+          this._bullService.updateImage(this.id(), key, file.type).subscribe({
+            next: () => {
+              this._alertMessageService.success('Imagen actualizada con éxito!');
               this.uploading.set(false);
             },
             error: (err) => {
-              console.error(' Error actualizando imagen', err);
+              this._alertMessageService.error(' Error actualizando imagen!' + err);
               this.uploading.set(false);
             },
           });
-        } catch (e) {
-          console.error(' Error subiendo', e);
+        } catch (err) {
+          console.error(' Error subiendo', err);
+          this._alertMessageService.error('Error subiendo archivo!' + err);
           this.uploading.set(false);
         }
       },
 
-      error: () => {
-        console.error('Error obteniendo URL prefirmada');
+      error: (err) => {
+        this._alertMessageService.error('Error obteniendo URL prefirmada' + err);
+        console.error('');
         this.uploading.set(false);
       },
     });
@@ -162,48 +228,21 @@ export default class BullDetailPage implements OnInit {
     this.activeTab.set(tab);
   }
 
-  onGallerySelected(event: Event) {
-    const files = Array.from((event.target as HTMLInputElement).files ?? []);
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.galleryPreviews.update((prev) => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
+  onGallerySelected(files: File[]) {
+    console.log(files);
   }
 
-  removeGalleryImage(index: number) {
-    this.galleryPreviews.update((prev) => prev.filter((_, i) => i !== index));
+  onVideoSelected(file: File) {
+    console.log(file);
   }
 
-  onVideoSelected(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.videoFile.set(file);
-    this.videoPreview.set(URL.createObjectURL(file));
-  }
-
-  onGeneticSelected(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.geneticFile.set(file);
-    this.geneticFileName.set(file.name);
-  }
-
-  removeVideo() {
-    this.videoPreview.set(null);
-    this.videoFile.set(null);
-  }
-
-  removeGenetic() {
-    this.geneticFile.set(null);
-    this.geneticFileName.set(null);
+  onDocumentSelected(file: File) {
+    console.log(file);
   }
 
   loadBull() {
     this.loading.set(true);
-    this.bullService.getById(this.id()).subscribe({
+    this._bullService.getById(this.id()).subscribe({
       next: (data) => {
         this.bull.set(data);
         this.loading.set(false);
@@ -217,7 +256,7 @@ export default class BullDetailPage implements OnInit {
 
   loadStraws() {
     this.loading.set(true);
-    this.bullService.getStraws(this.id()).subscribe({
+    this._bullService.getStraws(this.id()).subscribe({
       next: (data) => {
         this.straws.set(data);
         this.loading.set(false);

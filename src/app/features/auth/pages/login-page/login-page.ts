@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RoutesApp } from '@app/shared/const/routes.app';
 import {
   AbstractControl,
@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { SignIn } from '../../model/signIn.model';
 import { AuthService } from '../../services/auth.service';
-import { ChangePassword } from '../../model/auth.response';
+import { AuthResponse, ChangePassword } from '../../model/auth.response';
 import { PasswordInput } from '@app/shared/ui/password-input/password-input';
 import { EmailInput } from '@app/shared/ui/email-input/email-input';
 
@@ -33,7 +33,10 @@ export default class LoginPage {
   private _router = inject(Router);
   private _formBuilder: FormBuilder = inject(FormBuilder);
   private _authService = inject(AuthService);
+  private _route: ActivatedRoute = inject(ActivatedRoute);
+  private _returnUrl = '';
   public showNewPasswordForm = signal(false);
+
   public form: FormGroup = this._formBuilder.nonNullable.group<SignIn>({
     email: new FormControl('', [
       Validators.email,
@@ -56,8 +59,8 @@ export default class LoginPage {
 
   public hasError = signal<boolean | null>(null);
 
-  get emailControl() {
-    return this.form.get('email')!;
+  constructor() {
+    this._returnUrl = this._route.snapshot.queryParams['returnUrl'] || '';
   }
 
   login() {
@@ -72,24 +75,39 @@ export default class LoginPage {
     }
 
     this._authService.login(this.form.value).subscribe({
-      next: (response) => {
-        if (response.status === 'SUCCESS') {
-          this._router.navigateByUrl(`${RoutesApp.admin}/${RoutesApp.dashboard}`);
-          return;
-        } else if (response.status === 'NEW_PASSWORD_REQUIRED') {
-          this.newPasswordForm.patchValue({
-            email: this.form.value.email,
-            session: response.session, // asume que el response trae el session token
-          });
-          this.showNewPasswordForm.set(true);
-          return;
-        }
-        this.setError();
-      },
+      next: (response) => this.handleRedirect(response),
       error: () => {
         this.setError();
       },
     });
+  }
+  goToRegister() {
+    this._router.navigate([`/${RoutesApp.auth}/${RoutesApp.register}`], {
+      queryParams: this._returnUrl ? { returnUrl: this._returnUrl } : {},
+    });
+  }
+
+  private handleRedirect(response: AuthResponse) {
+    if (this._returnUrl.includes(RoutesApp.bull)) {
+      this._router.navigateByUrl(`/${RoutesApp.checkout}`);
+    } else {
+      if (response.status === 'SUCCESS') {
+        if (this._authService.user()?.role === 'CUSTOMER') {
+          this._router.navigateByUrl(`/`);
+        } else {
+          this._router.navigateByUrl(`/${RoutesApp.admin}/${RoutesApp.dashboard}`);
+        }
+        return;
+      } else if (response.status === 'NEW_PASSWORD_REQUIRED') {
+        this.newPasswordForm.patchValue({
+          email: this.form.value.email,
+          session: response.session, // asume que el response trae el session token
+        });
+        this.showNewPasswordForm.set(true);
+        return;
+      }
+      this.setError();
+    }
   }
 
   setError() {

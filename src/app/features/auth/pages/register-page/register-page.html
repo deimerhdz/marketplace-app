@@ -1,1 +1,52 @@
-<p>register-page works!</p>,
+<div class="flex min-h-full flex-col justify-center  py-12 lg:px-8">
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="w-full bg-white rounded-lg shadow  md:mt-0 sm:max-w-md xl:p-0">
+            <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
+                    Crea una cuenta.
+                </h1>
+                @if (hasError()) {
+                <div class="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+                    Ocurrió un problema al crear la cuenta
+                </div>
+                }
+                <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+
+
+                    <div>
+                        <label for="full name">Nombre completo</label>
+                        <input type="text" class="input w-full" formControlName="fullName" id="fullName"
+                            placeholder="Nombre y apellido">
+                        @if(form.get('fullName')?.touched && form.get('fullName')?.errors?.['required']){
+                        <p class="mt-1 text-xs text-error">
+                            El nombre es obligatorio.
+                        </p>
+                        }
+                        @if (form.get('fullName')?.errors?.['fullNameInvalid']) {
+                        <p class="mt-1 text-xs text-error">
+                            Debes ingresar al menos nombre y apellido.
+                        </p>
+                        }
+
+                    </div>
+                    <app-email-input formControlName="email" label="Correo electrónico" placeholder="Correo electrónico"
+                        [control]="form.get('email')" />
+                    <!-- Password -->
+                    <app-password-input formControlName="password" label="Contraseña" id="password"
+                        placeholder="*******" [control]="form.get('password')" />
+
+                    <button type="submit" class="btn btn-success  text-white w-full">Registrarse</button>
+                    <div class="text-center">
+                        <span class="text-sm text-gray-600">
+                            ¿tienes una cuenta?
+                        </span>
+                        <a (click)="goToLogin()" role="button" tabindex="0"
+                            class="text-sm text-success hover:underline ml-1 cursor-pointer">
+                            Inicia Sesión
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -16,15 +16,21 @@ import { Bull } from '@app/features/bulls/model/bull.model';
 import { StrawSelector } from '@app/shared/ui/straw-selector/straw-selector';
 import { Straw } from '@app/features/bulls/model/straw.model';
 import { CurrencyPipe } from '@angular/common';
+import { AuthService } from '@app/features/auth/services/auth.service';
+import { QuantitySelector } from '@app/shared/ui/quantity-selector/quantity-selector';
+
+import { LocalStorageService } from '@app/core/services/local-storage.service';
 
 @Component({
   selector: 'app-bull-detail-page',
-  imports: [Breadcrumb, CurrencyPipe, Gallery, StrawSelector],
+  imports: [Breadcrumb, CurrencyPipe, QuantitySelector, Gallery, StrawSelector],
   templateUrl: './bull-detail-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class BullDetailPage implements OnInit {
   private _catalogService = inject(CatalogService);
+  private _storageService = inject(LocalStorageService);
+  private authStatus = inject(AuthService).authStatus();
   private _router = inject(Router);
 
   slug = input<string>();
@@ -42,6 +48,12 @@ export default class BullDetailPage implements OnInit {
   ngOnInit(): void {
     this.getBull();
   }
+  quantity = signal<number>(1);
+
+  totalPrice = computed(() => {
+    const price = this.selectedStraw()?.price ?? 0;
+    return price * this.quantity();
+  });
 
   getBull() {
     this._catalogService.getDetail(this.slug()!).subscribe({
@@ -52,10 +64,25 @@ export default class BullDetailPage implements OnInit {
   }
 
   checkout() {
-    this._router.navigateByUrl(`/${RoutesApp.checkout}`);
+    this._storageService.setItem('quantity', this.quantity());
+    this._storageService.setItem('item', {
+      image: this.bull()?.image,
+      breed: this.bull()?.breed.name,
+      name: this.bull()?.name,
+      straw: this.selectedStraw(),
+    });
+    if (this.authStatus === 'authenticated') {
+      this._router.navigateByUrl(`/${RoutesApp.checkout}`);
+    } else {
+      this._router.navigate([`/${RoutesApp.auth}/${RoutesApp.login}`], {
+        queryParams: { returnUrl: this._router.url },
+      });
+      return;
+    }
   }
+
   selectStraw(straw: Straw) {
-    console.log(straw);
     this.selectedStraw.set(straw);
+    this.quantity.set(straw.minOrder);
   }
 }

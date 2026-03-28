@@ -94,9 +94,12 @@
             <div class="card-body">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="card-title text-lg">Gestión de pajillas</h3>
-                    <button class="btn btn-success btn-sm text-white" (click)="openPajillaModal()">
+                    @if(straws().length!<2){ <button class="btn btn-success btn-sm text-white"
+                        (click)="openCreateModal()">
                         + Agregar pajilla
-                    </button>
+                        </button>
+                        }
+
                 </div>
 
                 <!-- Resumen rápido -->
@@ -106,7 +109,7 @@
                         <div class="stat-value text-lg text-success">{{ totalPajillas }}</div>
                     </div>
                     <div class="stat bg-base-200 rounded-xl p-3">
-                        <div class="stat-title text-xs">Tipos registrados</div>
+                        <div class="stat-title text-xs">Tipos de pajilla</div>
                         <div class="stat-value text-lg">{{ straws().length }}</div>
                     </div>
                     <div class="stat bg-base-200 rounded-xl p-3">
@@ -116,205 +119,25 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Descripción</th>
-                                <th>Precio</th>
-                                <th>Stock actual</th>
-                                <th>Stock mínimo</th>
-                                <th>Estado</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (item of straws(); track item.id) {
-                            <tr [class.bg-red-50]="isLowStock(item)" [class.bg-opacity-5]="isLowStock(item)">
-                                <td class="font-mono text-sm">{{ item.sku }}</td>
-                                <td>{{ item.type }}</td>
-                                <td class="font-semibold">
-                                    {{ item.price | currency: 'COP' : 'symbol' : '1.0-0' }}
-                                </td>
-                                <td>
-                                    <span class="font-bold text-base" [class.text-error]="isLowStock(item)"
-                                        [class.text-success]="!isLowStock(item)">
-                                        {{ item.inventory.stock }}
-                                    </span>
-                                </td>
-                                <td class="text-base-content/60">{{ item.inventory.minStock }}</td>
-                                <td>
-                                    @if (isLowStock(item)) {
-                                    <span class="badge badge-error badge-sm text-white">Stock crítico</span>
-                                    } @else {
-                                    <span class="badge badge-success badge-sm text-white">OK</span>
-                                    }
-                                </td>
-                                <td>
-                                    <div class="flex gap-1">
-                                        <button class="btn btn-ghost btn-xs" title="Editar">✏️</button>
-                                        <button class="btn btn-ghost btn-xs text-error" title="Eliminar">✕</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" class="text-right font-bold text-sm">Total en stock:</td>
-                                <td class="font-bold text-success text-base">{{ totalPajillas }} uds.</td>
-                                <td colspan="3"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
+                <app-table [columns]="columns" [data]="straws()" [actions]="actions" [footer]="footer()"
+                    [rowCriticalFn]="isLowStock" />
             </div>
         </div>
         }
 
         <!-- ── TAB: Galería de imágenes ── -->
         @if (activeTab() === 'gallery') {
-        <div class="card bg-base-100 shadow-md border border-base-200">
-            <div class="card-body">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="card-title text-lg">Galería de imágenes</h3>
-                    <label class="btn btn-success btn-sm text-white cursor-pointer">
-                        + Subir imágenes
-                        <input type="file" accept="image/*" multiple class="hidden"
-                            (change)="onGallerySelected($event)" />
-                    </label>
-                </div>
-
-                @if (galleryPreviews().length === 0) {
-                <div
-                    class="flex flex-col items-center justify-center h-40 border-2 border-dashed border-base-300 rounded-xl text-base-content/40 gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M3 16l4-4a3 3 0 014 0l4 4m0 0l1-1a3 3 0 014 0l2 2M3 20h18M21 8a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span class="text-sm">No hay imágenes. Sube algunas fotos del toro.</span>
-                </div>
-                } @else {
-                <div class="grid grid-cols-3 gap-3">
-                    @for (img of galleryPreviews(); track $index) {
-                    <div class="relative group rounded-xl overflow-hidden border border-base-200 aspect-square">
-                        <img [src]="img" class="w-full h-full object-cover" alt="Imagen del toro" />
-                        <button
-                            class="absolute top-1 right-1 btn btn-xs btn-error text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                            (click)="removeGalleryImage($index)">✕</button>
-                    </div>
-                    }
-                </div>
-                }
-
-                @if (galleryPreviews().length > 0) {
-                <div class="card-actions justify-end mt-4">
-                    <button class="btn btn-success btn-sm text-white">Guardar imágenes</button>
-                </div>
-                }
-            </div>
-        </div>
+        <app-upload-gallery (images)="onGallerySelected($event)" />
         }
 
         <!-- ── TAB: Video ── -->
         @if (activeTab() === 'video') {
-        <div class="card bg-base-100 shadow-md border border-base-200">
-            <div class="card-body">
-                <h3 class="card-title text-lg mb-4">Video del toro</h3>
-
-                @if (!videoPreview()) {
-                <label
-                    class="flex flex-col items-center justify-center h-48 border-2 border-dashed border-base-300 rounded-xl cursor-pointer hover:border-success transition-colors text-base-content/40 gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
-                    </svg>
-                    <span class="text-sm font-medium">Haz clic para subir un video</span>
-                    <span class="text-xs">MP4, MOV, AVI — máx. 200MB</span>
-                    <input type="file" accept="video/*" class="hidden" (change)="onVideoSelected($event)" />
-                </label>
-                } @else {
-                <div class="flex flex-col gap-3">
-                    <video [src]="videoPreview()!" controls
-                        class="w-full rounded-xl border border-base-200 max-h-64"></video>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-base-content/60">{{ videoFile()?.name }}</span>
-                        <div class="flex gap-2">
-                            <button class="btn btn-error btn-sm text-white" (click)="removeVideo()">Eliminar</button>
-                            <button class="btn btn-success btn-sm text-white">Guardar video</button>
-                        </div>
-                    </div>
-                </div>
-                }
-            </div>
-        </div>
+        <app-upload-video (video)="onVideoSelected($event)" />
         }
 
         <!-- ── TAB: Evaluación genética ── -->
         @if (activeTab() === 'genetic') {
-        <div class="card bg-base-100 shadow-md border border-base-200">
-            <div class="card-body">
-                <h3 class="card-title text-lg mb-4">Evaluación genética</h3>
-
-                @if (!geneticFileName()) {
-                <label
-                    class="flex flex-col items-center justify-center h-48 border-2 border-dashed border-base-300 rounded-xl cursor-pointer hover:border-success transition-colors text-base-content/40 gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span class="text-sm font-medium">Haz clic para subir el documento</span>
-                    <span class="text-xs">PDF, DOC, DOCX, XLS — máx. 20MB</span>
-                    <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="hidden"
-                        (change)="onGeneticSelected($event)" />
-                </label>
-                } @else {
-                <div class="flex items-center justify-between p-4 border border-base-200 rounded-xl bg-base-200/50">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-sm">{{ geneticFileName() }}</p>
-                            <p class="text-xs text-base-content/50">Listo para guardar</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="btn btn-error btn-sm text-white" (click)="removeGenetic()">Eliminar</button>
-                        <button class="btn btn-success btn-sm text-white">Guardar</button>
-                    </div>
-                </div>
-                }
-
-                <!-- Documentos ya subidos (mock) -->
-                <div class="mt-4">
-                    <p class="text-xs text-base-content/50 uppercase tracking-wide mb-2">Documentos guardados</p>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex items-center justify-between p-3 border border-base-200 rounded-lg">
-                            <div class="flex items-center gap-2">
-                                <span class="badge badge-success badge-sm text-white">PDF</span>
-                                <span class="text-sm">evaluacion_genetica_2023.pdf</span>
-                            </div>
-                            <div class="flex gap-2">
-                                <button class="btn btn-ghost btn-xs">Ver</button>
-                                <button class="btn btn-ghost btn-xs text-error">✕</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+        <app-upload-file (document)="onDocumentSelected($event)" />
         }
 
     </div>
@@ -323,80 +146,99 @@
 
 
 
-@if (showStrawModal()) {
+@if (strawModal()) {
 <div class="modal modal-open">
-    <div class="modal-box max-w-lg">
+    <form class="modal-box max-w-lg" [formGroup]="strawForm">
 
-        <h3 class="font-bold text-lg mb-4">Nueva pajilla</h3>
+        <h3 class="font-bold text-lg mb-4">{{ modalTitle() }}</h3>
 
-        <!-- Tipo -->
+        <!-- ── Solo en CREAR ── -->
+        @if (!isEditing()) {
+
         <div class="form-control mb-3">
             <label class="label" for="type">
                 <span class="label-text font-medium">Tipo de pajilla</span>
             </label>
-            <select class="select select-bordered w-full" id="type" [value]="strawForm().type"
-                (change)="updateForm({ type: $any($event.target).value })">
+            <select class="select select-bordered w-full" id="type" formControlName="type">
                 <option value="CONVENTIONAL">Convencional</option>
-                <option value="SEXED">Sexada hembra</option>
-                <option value="SEXED_MALE">Sexada macho</option>
+                <option value="SEXED">Sexado</option>
             </select>
         </div>
 
-        <!-- Precio -->
-        <div class="form-control mb-3">
-            <label class="label" for="price">
-                <span class="label-text font-medium">Precio (COP)</span>
-            </label>
-            <input type="number" id="price" class="input input-bordered w-full" placeholder="Ej: 40000"
-                [value]="strawForm().price" (input)="updateForm({ price: +$any($event.target).value })" />
-        </div>
-
-        <!-- Pedido mínimo -->
         <div class="form-control mb-3">
             <label class="label" for="minOrder">
-                <span class="label-text font-medium">Pedido mínimo (dosis)</span></label>
-            <input type="number" class="input input-bordered w-full" placeholder="Ej: 5" min="1"
-                [value]="strawForm().minOrder" (input)="updateForm({ minOrder: +$any($event.target).value })" />
+                <span class="label-text font-medium">Pedido mínimo (dosis)</span>
+            </label>
+            <input type="number" id="minOrder" class="input input-bordered w-full" placeholder="Ej: 5" min="1"
+                formControlName="minOrder"
+                [class.input-error]="strawForm.get('minOrder')?.invalid && strawForm.get('minOrder')?.touched" />
+            @if (strawForm.get('minOrder')?.hasError('min') && strawForm.get('minOrder')?.touched) {
+            <span class="label-text-alt text-error mt-1">Mínimo 1 dosis</span>
+            }
         </div>
 
-        <!-- Stock e inventario en dos columnas -->
+        }
+
+        <!-- ── Precio (ambos modos) ── -->
+        <div class="form-control mb-3">
+            <label class="label" for="price">
+                <span class="label-text font-medium">
+                    {{ isEditing() ? 'Actualizar precio (COP)' : 'Precio (COP)' }}
+                </span>
+            </label>
+            <input type="number" id="price" class="input input-bordered w-full" placeholder="Ej: 40000"
+                formControlName="price"
+                [class.input-error]="strawForm.get('price')?.invalid && strawForm.get('price')?.touched" />
+            @if (strawForm.get('price')?.hasError('min') && strawForm.get('price')?.touched) {
+            <span class="label-text-alt text-error mt-1">El precio no puede ser negativo</span>
+            }
+        </div>
+
+        <!-- ── Stock (ambos modos) ── -->
         <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="form-control">
                 <label class="label" for="stock">
-                    <span class="label-text font-medium">Stock inicial</span>
+                    <span class="label-text font-medium">
+                        {{ isEditing() ? 'Actualizar stock' : 'Stock inicial' }}
+                    </span>
                 </label>
                 <input type="number" id="stock" class="input input-bordered w-full" placeholder="Ej: 200" min="0"
-                    [value]="strawForm().inventory.stock"
-                    (input)="updateInventory({ stock: +$any($event.target).value })" />
+                    formControlName="stock"
+                    [class.input-error]="strawForm.get('stock')?.invalid && strawForm.get('stock')?.touched" />
+                @if (strawForm.get('stock')?.hasError('min') && strawForm.get('stock')?.touched) {
+                <span class="label-text-alt text-error mt-1">No puede ser negativo</span>
+                }
             </div>
-            <div class="form-control">
-                <label class="label" for="minStock"><span class="label-text font-medium">Stock mínimo</span></label>
-                <input type="number" id="minStock" class="input input-bordered w-full" placeholder="Ej: 25" min="0"
-                    [value]="strawForm().inventory.minStock"
-                    (input)="updateInventory({ minStock: +$any($event.target).value })" />
-            </div>
-        </div>
 
-        <!-- Preview del JSON que se enviará -->
-        <div class="bg-base-200 rounded-lg p-3 mb-4 text-xs font-mono text-base-content/60 overflow-auto max-h-28">
-            {{ strawForm() | json }}
+            <div class="form-control">
+                <label class="label" for="minStock">
+                    <span class="label-text font-medium">
+                        {{ isEditing() ? 'Actualizar stock mínimo' : 'Stock mínimo' }}
+                    </span>
+                </label>
+                <input type="number" id="minStock" class="input input-bordered w-full" placeholder="Ej: 25" min="0"
+                    formControlName="minStock"
+                    [class.input-error]="strawForm.get('minStock')?.invalid && strawForm.get('minStock')?.touched" />
+                @if (strawForm.get('minStock')?.hasError('min') && strawForm.get('minStock')?.touched) {
+                <span class="label-text-alt text-error mt-1">No puede ser negativo</span>
+                }
+            </div>
         </div>
 
         <div class="modal-action">
-            <button class="btn btn-ghost" (click)="closeStrawModal()" [disabled]="savingStraw()">
+            <button class="btn btn-ghost" (click)="closeModal()" [disabled]="savingStraw()">
                 Cancelar
             </button>
-            <button class="btn btn-success text-white" (click)="savePajilla()" [disabled]="savingStraw()">
+            <button class="btn btn-success text-white" (click)="saveStraw()" [disabled]="savingStraw()">
                 @if (savingStraw()) {
                 <span class="loading loading-spinner loading-sm"></span> Guardando...
                 } @else {
-                Guardar pajilla
+                {{ saveLabel() }}
                 }
             </button>
         </div>
-    </div>
+    </form>
 
-    <!-- Backdrop para cerrar -->
-    <div class="modal-backdrop" role="button" tabindex="0" (click)="closeStrawModal()"></div>
+    <div class="modal-backdrop" role="button" tabindex="0" (click)="closeModal()"></div>
 </div>
 }

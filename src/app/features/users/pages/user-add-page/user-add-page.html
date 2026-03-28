@@ -1,0 +1,111 @@
+<div class="flex  items-center gap-4 mb-4">
+    <button class="btn" (click)="back()">Volver</button>
+    <h2 class="text-2xl font-bold ">Agregar toro </h2>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid max-w-3xl gap-4">
+        <!-- Nombre -->
+        <div>
+            <label class="block" for="name">Nombre</label>
+            <input type="text" formControlName="name" id="name" class="input w-full" />
+            @if(form.get('name')?.touched && form.get('name')?.invalid){
+            <p class="text-red-500 text-sm mt-1">Nombre obligatorio</p>
+            }
+
+        </div>
+
+        <!-- Apellido -->
+        <div>
+            <label for="lastName" class="block">Apellido: (*)</label>
+            <input type="text" id="lastName" formControlName="lastName" class="input w-full" />
+            @if(form.get('lastName')?.touched && form.get('lastName')?.invalid){
+            <p class="text-red-500 text-sm mt-1"> Apellido obligatorio</p>
+            }
+
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700" for="">Correo electrónico: (*)</label>
+            <input type="email" formControlName="email" class="input w-full" />
+            @if(form.get('email')?.touched && form.get('email')?.invalid){
+
+            <p class="text-red-500 text-sm mt-1">Email válido obligatorio</p>
+            }
+
+        </div>
+
+        <!-- Rol -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700" for="">Rol: (*)</label>
+            <select formControlName="role" class="select w-full">
+                <option value="">Seleccione un rol</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="SUPPLIER">SUPPLIER</option>
+            </select>
+            @if(form.get('role')?.touched && form.get('role')?.invalid){
+            <p class="text-red-500 text-sm mt-1">Rol obligatorio</p>
+            }
+
+        </div>
+
+        <!-- Supplier (solo si es SUPPLIER) -->
+        @if(form.get('role')?.value === 'SUPPLIER'){
+        <div formGroupName="supplier" class=" pt-4 space-y-4">
+
+            <h3 class="text-lg font-semibold text-gray-700">Datos del Proveedor</h3>
+
+            <!-- NIT -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700" for="nit">NIT: (*)</label>
+                <input type="text" formControlName="nit" class="input w-full" />
+                @if(form.get('supplier.nit')?.touched && form.get('supplier.nit')?.invalid){
+                <p class="text-red-500 text-sm mt-1">NIT obligatorio</p>
+                }
+            </div>
+
+            <!-- Teléfono con prefijo -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700" for="phone">Teléfono: (*)</label>
+
+                <div class="flex gap-2">
+                    <!-- Selector de país -->
+                    <select class="select w-32" formControlName="countryCode">
+                        <option value="+57">🇨🇴 +57</option>
+                        <!-- puedes agregar más -->
+                    </select>
+
+                    <!-- Número -->
+                    <input type="text" formControlName="phone" id="phone"
+                        class="flex-1 rounded-lg border-gray-300 focus:ring focus:ring-blue-200 p-2 border"
+                        placeholder="3001234567" />
+                </div>
+                @if (form.get('supplier.phone')?.touched && form.get('supplier.phone')?.invalid) {
+                <p class="text-red-500 text-sm mt-1">Teléfono obligatorio</p>
+                }
+            </div>
+
+            <!-- Razón social -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700" for="legalName">Razón social: (*)</label>
+                <input type="text" formControlName="legalName" id="legalName" class="input w-full" />
+                @if (form.get('supplier.legalName')?.touched && form.get('supplier.legalName')?.invalid) {
+
+                <p class="text-red-500 text-sm mt-1">Razón social obligatoria</p>
+                }
+            </div>
+
+        </div>
+        }
+        <!-- Botón -->
+        <div class="pt-4">
+            <div class="mb-3 col-span-2">
+                <button class="btn btn-success text-white" type="submit">Registrar</button>
+            </div>
+        </div>
+    </div>
+
+
+
+</form>
