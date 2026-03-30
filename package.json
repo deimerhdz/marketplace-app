@@ -33,6 +33,7 @@
     "@angular/router": "^21.1.0",
     "@tailwindcss/postcss": "^4.2.2",
     "daisyui": "^5.5.19",
+    "ng2-pdf-viewer": "^10.4.0",
     "postcss": "^8.5.8",
     "rxjs": "~7.8.0",
     "sweetalert2": "^11.26.24",

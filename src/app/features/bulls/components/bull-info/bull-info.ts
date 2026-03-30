@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Bull } from '../../model/bull.model';
 import { DatePipe } from '@angular/common';
 
@@ -36,7 +36,9 @@ import { DatePipe } from '@angular/common';
           </div>
         </div>
         <div class="card-actions justify-end mt-4">
-          <button class="btn btn-outline btn-sm">Editar</button>
+          <button class="btn btn-outline btn-sm" (click)="handleEdit.emit(bull().id)">
+            Editar
+          </button>
           <button class="btn btn-error btn-sm text-white">Archivar</button>
         </div>
       </div>
@@ -46,4 +48,6 @@ import { DatePipe } from '@angular/common';
 })
 export class BullInfo {
   bull = input.required<Bull>();
+
+  handleEdit = output<string>();
 }

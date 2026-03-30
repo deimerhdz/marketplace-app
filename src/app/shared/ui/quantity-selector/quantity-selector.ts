@@ -19,7 +19,6 @@ export class QuantitySelector implements OnInit {
   ngOnInit() {
     // Inicializar con el mínimo cuando cambia la pajilla
     this.quantity.set(this.min());
-    console.log(this.min());
   }
 
   increment() {

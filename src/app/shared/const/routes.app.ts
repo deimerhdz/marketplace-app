@@ -1,6 +1,7 @@
 export enum RoutesApp {
   root = '',
   new = 'new',
+  edit = 'edit',
   auth = 'auth',
   bull = 'toro',
   login = 'login',

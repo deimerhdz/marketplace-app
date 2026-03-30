@@ -2,11 +2,11 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { environment } from '@env/environment';
 
 @Pipe({
-  name: 'imagePipe',
+  name: 'filePipe',
   pure: false,
   standalone: true,
 })
-export class ImagePipe implements PipeTransform {
+export class FilePipe implements PipeTransform {
   protected cdnUrl = environment.cdnUrl;
 
   transform(s3Key: string | null | undefined): string {

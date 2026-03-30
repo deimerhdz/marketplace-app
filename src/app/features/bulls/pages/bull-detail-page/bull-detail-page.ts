@@ -15,7 +15,7 @@ import { BullInfo } from '../../components/bull-info/bull-info';
 import { CreateStraw } from '../../model/createStraw.model';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Straw } from '../../model/straw.model';
-import { ImagePipe } from '@app/shared/pipe/image.pipe';
+import { FilePipe } from '@app/shared/pipe/file.pipe';
 import { AlertMessageService } from '@app/shared/services/alert-message.service';
 import { UploadGallery } from '@app/shared/ui/upload-gallery/upload-gallery';
 import { UploadVideo } from '@app/shared/ui/upload-video/upload-video';
@@ -28,7 +28,7 @@ import { Loader } from '@app/shared/ui/loader/loader';
   selector: 'app-bull-detail-page',
   imports: [
     BullInfo,
-    ImagePipe,
+    FilePipe,
     UploadVideo,
     UploadFile,
     UploadGallery,
@@ -327,6 +327,10 @@ export default class BullDetailPage implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  handleEditBull(id: string) {
+    this._router.navigateByUrl(`/${RoutesApp.admin}/${RoutesApp.bulls}/${RoutesApp.edit}/${id}`);
   }
 
   get totalPajillas(): number {

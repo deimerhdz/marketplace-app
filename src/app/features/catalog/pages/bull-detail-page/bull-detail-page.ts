@@ -1,3 +1,4 @@
+import { environment } from './../../../../../environments/environment';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,9 +22,21 @@ import { QuantitySelector } from '@app/shared/ui/quantity-selector/quantity-sele
 
 import { LocalStorageService } from '@app/core/services/local-storage.service';
 
+import { FilePipe } from '@app/shared/pipe/file.pipe';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
+
 @Component({
   selector: 'app-bull-detail-page',
-  imports: [Breadcrumb, CurrencyPipe, QuantitySelector, Gallery, StrawSelector],
+  imports: [
+    Breadcrumb,
+    CurrencyPipe,
+    QuantitySelector,
+    Gallery,
+    StrawSelector,
+
+    FilePipe,
+    PdfViewerModule,
+  ],
   templateUrl: './bull-detail-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -32,7 +45,13 @@ export default class BullDetailPage implements OnInit {
   private _storageService = inject(LocalStorageService);
   private authStatus = inject(AuthService).authStatus();
   private _router = inject(Router);
-
+  pdfSrc = computed(() => ({
+    url: environment.cdnUrl + '/' + this.bull()?.geneticEvaluation?.key,
+    withCredentials: false,
+    httpHeaders: {
+      Accept: 'application/pdf',
+    },
+  }));
   slug = input<string>();
   sku = input<string>();
 
