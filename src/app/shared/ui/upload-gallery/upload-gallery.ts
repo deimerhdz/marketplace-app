@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { MediaFile } from '@app/core/model/media-file.model';
+import { AlertMessageService } from '@app/shared/services/alert-message.service';
+import { environment } from '@env/environment';
 
 @Component({
   selector: 'app-upload-gallery',
@@ -7,8 +18,14 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
     <div class="card bg-base-100 shadow-md border border-base-200">
       <div class="card-body">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="card-title text-lg">Galería de imágenes</h3>
-          <label class="btn btn-success btn-sm text-white cursor-pointer">
+          <h3 class="card-title text-lg mr-4">Galería de imágenes</h3>
+          @if (errorMessage()) {
+            <p class="text-xs text-error mt-1">{{ errorMessage() }}</p>
+          }
+          <label
+            class="btn btn-success btn-sm text-white cursor-pointer"
+            [class.btn-disabled]="galleryPreviews().length >= 3"
+          >
             + Subir imágenes
             <input
               type="file"
@@ -48,8 +65,8 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
               >
                 <img [src]="img" class="w-full h-full object-cover" alt="Imagen del toro" />
                 <button
-                  class="absolute top-1 right-1 btn btn-xs btn-error text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  (click)="removeGalleryImage($index)"
+                  class="absolute top-1 right-1 btn btn-xs btn-error text-white  transition-opacity"
+                  (click)="removeGalleryImage($index, img)"
                 >
                   ✕
                 </button>
@@ -59,9 +76,7 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
         }
 
         @if (galleryPreviews().length > 0) {
-          <div class="card-actions justify-end mt-4">
-            <button class="btn btn-success btn-sm text-white">Guardar imágenes</button>
-          </div>
+          <ng-content></ng-content>
         }
       </div>
     </div>
@@ -69,23 +84,70 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UploadGallery {
+  private readonly MAX_IMAGES = 3;
+  private _alertMessageService = inject(AlertMessageService);
   galleryPreviews = signal<string[]>([]);
-
+  previewImages = input<MediaFile[] | null>();
+  errorMessage = signal<string | null>(null);
+  handleDelete = output<string>();
   images = output<File[]>();
 
+  constructor() {
+    effect(() => {
+      const previews = this.previewImages();
+      this.galleryPreviews.set(
+        previews ? previews.map((file) => `${environment.cdnUrl}/${file.key}`) : [],
+      );
+    });
+  }
+
   onGallerySelected(event: Event) {
-    const files = Array.from((event.target as HTMLInputElement).files ?? []);
-    this.images.emit(files);
-    files.forEach((file) => {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+
+    const available = this.MAX_IMAGES - this.galleryPreviews().length;
+
+    if (available <= 0) {
+      this.errorMessage.set(`Máximo ${this.MAX_IMAGES} imágenes permitidas.`);
+      input.value = '';
+      return;
+    }
+
+    const accepted = files.slice(0, available);
+
+    if (files.length > available) {
+      this.errorMessage.set(
+        `Solo se agregaron ${accepted.length} imagen(es). Límite de ${this.MAX_IMAGES}.`,
+      );
+    } else {
+      this.errorMessage.set(null);
+    }
+
+    this.images.emit(accepted);
+    accepted.forEach((file) => {
       const reader = new FileReader();
       reader.onload = () => {
         this.galleryPreviews.update((prev) => [...prev, reader.result as string]);
       };
       reader.readAsDataURL(file);
     });
+
+    input.value = '';
   }
 
-  removeGalleryImage(index: number) {
-    this.galleryPreviews.update((prev) => prev.filter((_, i) => i !== index));
+  removeGalleryImage(index: number, key: string) {
+    this._alertMessageService
+      .confirm('¿Estás seguro?', 'Esta acción eliminará la imagen permanentemente.')
+      .then((result) => {
+        if (result.isConfirmed) {
+          this.galleryPreviews.update((prev) => prev.filter((_, i) => i !== index));
+
+          if (key.startsWith(environment.cdnUrl)) {
+            //update if domain changes
+            const fileKey = key.split('.net/')[1];
+            this.handleDelete.emit(fileKey);
+          }
+        }
+      });
   }
 }

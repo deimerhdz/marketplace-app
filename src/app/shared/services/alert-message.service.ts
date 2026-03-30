@@ -30,4 +30,17 @@ export class AlertMessageService {
   info(message: string) {
     this.showAlert('Información', message, 'info');
   }
+
+  async confirm(title: string, text: string) {
+    return await Swal.fire({
+      title,
+      text,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Si, eliminar!',
+      cancelButtonText: 'Cancelar',
+    });
+  }
 }

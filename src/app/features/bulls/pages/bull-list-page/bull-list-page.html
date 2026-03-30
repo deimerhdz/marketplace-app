@@ -13,7 +13,7 @@
         <!-- head -->
         <thead>
             <tr>
-                <th>Stud</th>
+                <th>Numero De registro</th>
                 <th>Nombre</th>
                 <th>Raza</th>
                 <th>Acciones</th>
@@ -23,7 +23,7 @@
             <!-- row 1 -->
             @for (item of bulls()?.content; track item.id) {
             <tr>
-                <th>{{item.stud}}</th>
+                <th>{{item.numRegister}}</th>
                 <th>{{item.name}}</th>
                 <td>{{item.breed.name}}</td>
                 <td><button class="btn btn-info text-white" (click)="detail(item.id)">Ver detalles</button></td>

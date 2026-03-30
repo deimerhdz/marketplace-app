@@ -108,7 +108,7 @@ export interface TableFooter {
                         [title]="action.title"
                         (click)="action.onClick(row)"
                       >
-                        {{ action.icon }}
+                        <i [class]="action.icon"></i>
                       </button>
                     }
                   </div>

@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { MediaFile } from '@app/core/model/media-file.model';
+import { AlertMessageService } from '@app/shared/services/alert-message.service';
+import { environment } from '@env/environment';
 
 @Component({
   selector: 'app-upload-video',
@@ -35,7 +46,7 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
             <video
               [src]="videoPreview()!"
               controls
-              class="w-full rounded-xl border border-base-200 max-h-64"
+              class="w-full rounded-xl border border-base-200 max-h-64 md:max-w-64"
             ></video>
             <div class="flex justify-between items-center">
               <span class="text-sm text-base-content/60">{{ videoFile()?.name }}</span>
@@ -43,7 +54,6 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
                 <button class="btn btn-error btn-sm text-white" (click)="removeVideo()">
                   Eliminar
                 </button>
-                <button class="btn btn-success btn-sm text-white">Guardar video</button>
               </div>
             </div>
           </div>
@@ -54,11 +64,18 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UploadVideo {
+  private _alertMessageService = inject(AlertMessageService);
   video = output<File>();
-
   videoPreview = signal<string | null>(null);
-
+  previewVideo = input<MediaFile | null>();
   videoFile = signal<File | null>(null);
+  handleDelete = output<string>();
+  constructor() {
+    effect(() => {
+      const preview = this.previewVideo();
+      this.videoPreview.set(preview ? `${environment.cdnUrl}/${preview.key}` : '');
+    });
+  }
 
   onVideoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -68,7 +85,15 @@ export class UploadVideo {
   }
 
   removeVideo() {
-    this.videoPreview.set(null);
-    this.videoFile.set(null);
+    this._alertMessageService
+      .confirm('¿Estás seguro?', 'Esta acción eliminará la imagen permanentemente.')
+      .then((result) => {
+        if (result.isConfirmed) {
+          const fileKey = this.previewVideo()?.key;
+          this.handleDelete.emit(fileKey ?? '');
+          this.videoPreview.set(null);
+          this.videoFile.set(null);
+        }
+      });
   }
 }

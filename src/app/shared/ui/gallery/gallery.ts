@@ -37,9 +37,9 @@ register();
       free-mode="true"
       watch-slides-progress="true"
     >
-      <swiper-slide>
-        @if (gallery()?.length! > 1) {
-          @for (item of gallery(); track $index) {
+      @if (gallery()?.length! > 1) {
+        @for (item of gallery(); track $index) {
+          <swiper-slide>
             <div class="slide-thumbnail">
               <img
                 [src]="item.key | imagePipe"
@@ -47,9 +47,9 @@ register();
                 [alt]="item.key"
               />
             </div>
-          }
+          </swiper-slide>
         }
-      </swiper-slide>
+      }
     </swiper-container>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

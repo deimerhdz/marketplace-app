@@ -15,8 +15,10 @@ import { DatePipe } from '@angular/common';
             <p class="font-semibold">{{ bull().name }}</p>
           </div>
           <div>
-            <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Stud</p>
-            <p class="font-semibold">{{ bull().stud }}</p>
+            <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">
+              Número de registro
+            </p>
+            <p class="font-semibold">{{ bull().numRegister }}</p>
           </div>
           <div>
             <p class="text-xs text-base-content/50 uppercase tracking-wide mb-1">Raza</p>
@@ -35,7 +37,7 @@ import { DatePipe } from '@angular/common';
         </div>
         <div class="card-actions justify-end mt-4">
           <button class="btn btn-outline btn-sm">Editar</button>
-          <button class="btn btn-error btn-sm text-white">Eliminar</button>
+          <button class="btn btn-error btn-sm text-white">Archivar</button>
         </div>
       </div>
     </div>

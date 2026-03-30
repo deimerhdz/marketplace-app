@@ -13,10 +13,11 @@
             }
         </div>
         <div class="mb-3">
-            <label for="stud" class="block">Stud: (*)</label>
-            <input type="text" formControlName="stud" id="stud" placeholder="Type here" class="input w-full" />
-            @if (isInvalid('stud')) {
-            <span class="text-error text-sm">{{ getError('stud') }}</span>
+            <label for="numRegister" class="block">Número de registro: (*)</label>
+            <input type="text" formControlName="numRegister" id="numRegister" placeholder="Type here"
+                class="input w-full" />
+            @if (isInvalid('numRegister')) {
+            <span class="text-error text-sm">{{ getError('numRegister') }}</span>
             }
         </div>
         <div class="mb-3">

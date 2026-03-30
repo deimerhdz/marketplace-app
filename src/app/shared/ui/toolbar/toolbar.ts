@@ -31,7 +31,7 @@ import { RoutesApp } from '@app/shared/const/routes.app';
           <p class="hidden md:block ">
             {{ authService.user()?.name }} {{ authService.user()?.lastName }}
           </p>
-          <button class="btn btn-error" (click)="logOut()">Salir</button>
+          <button class="btn btn-error text-white" (click)="logOut()">Salir</button>
         </div>
       }
     </nav>

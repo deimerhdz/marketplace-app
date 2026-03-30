@@ -5,13 +5,14 @@ import { Straw } from './straw.model';
 export interface Bull {
   id: string;
   name: string;
-  stud: string;
+  numRegister: string;
   slug: string;
   breed: Breed;
   straws: Straw[];
   birthDate: string;
   video?: MediaFile;
   image?: MediaFile;
+  geneticEvaluation?: MediaFile;
   description: string;
   isFeature: boolean;
   gallery: MediaFile[];

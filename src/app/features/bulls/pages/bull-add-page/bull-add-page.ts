@@ -22,7 +22,7 @@ export default class BullAddPage implements OnInit {
   breeds = signal<Breed[] | null>(null);
   form = this._fb.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
-    stud: ['', [Validators.required]],
+    numRegister: ['', [Validators.required]],
     breedId: ['', [Validators.required]],
     birthDate: ['', [Validators.required]],
     description: ['', [Validators.required, Validators.minLength(10)]],

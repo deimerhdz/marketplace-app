@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Paginated } from '@app/core/model/paginated-response.model';
 import { RoutesApp } from '@app/shared/const/routes.app';
@@ -8,7 +8,8 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { CreateBull } from '../model/create-bull.model';
 import { CreateStraw } from '../model/createStraw.model';
 import { Straw } from '../model/straw.model';
-
+import { MediaFile } from '@app/core/model/media-file.model';
+export type ResourceType = 'IMAGE' | 'VIDEO' | 'GALLERY' | 'DOCUMENT';
 @Injectable({
   providedIn: 'root',
 })
@@ -28,13 +29,6 @@ export class BullService {
 
   getById(id: string) {
     return this._http.get<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/${id}`);
-  }
-
-  updateImage(id: string, key: string, contentType: string) {
-    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/image/${id}`, {
-      key,
-      contentType,
-    });
   }
 
   getStraws(bullId: string) {
@@ -62,5 +56,48 @@ export class BullService {
       },
       body: file.slice(0, file.size, file.type),
     });
+  }
+
+  getUploadUrls(path: string, files: File[]) {
+    const params = new HttpParams().set('filePath', path);
+    const body = {
+      files: files.map((f) => ({ key: f.name, contentType: f.type })),
+    };
+    return this._http.post<{ urls: string[] }>(`${this._apiUrl}/files/pre-signed-urls`, body, {
+      params,
+    });
+  }
+
+  updateGallery(id: string, files: { key: string; contentType: string }[]) {
+    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/gallery/${id}`, { files });
+  }
+
+  updateVideo(id: string, key: string, contentType: string) {
+    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/video/${id}`, {
+      key,
+      contentType,
+    });
+  }
+
+  updateDocument(id: string, key: string, contentType: string) {
+    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/document/${id}`, {
+      key,
+      contentType,
+    });
+  }
+
+  deleteResource(id: string, key: string, resource: ResourceType) {
+    return this._http.delete<Bull>(
+      `${this._apiUrl}/${RoutesApp.bulls}/resource/${id}?key=${key}&resource=${resource}`,
+    );
+  }
+
+  updateResource(id: string, files: MediaFile[], resource: ResourceType) {
+    return this._http.put<Bull>(
+      `${this._apiUrl}/${RoutesApp.bulls}/update-resource/${id}?resource=${resource}`,
+      {
+        files,
+      },
+    );
   }
 }

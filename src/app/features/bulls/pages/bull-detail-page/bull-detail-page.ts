@@ -10,7 +10,7 @@ import {
 import { Bull } from '../../model/bull.model';
 import { Router } from '@angular/router';
 import { RoutesApp } from '@app/shared/const/routes.app';
-import { BullService } from '../../service/bull.service';
+import { BullService, ResourceType } from '../../service/bull.service';
 import { BullInfo } from '../../components/bull-info/bull-info';
 import { CreateStraw } from '../../model/createStraw.model';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -21,6 +21,9 @@ import { UploadGallery } from '@app/shared/ui/upload-gallery/upload-gallery';
 import { UploadVideo } from '@app/shared/ui/upload-video/upload-video';
 import { UploadFile } from '@app/shared/ui/upload-file/upload-file';
 import { Table, TableAction, TableColumn, TableFooter } from '@app/shared/ui/table/table';
+import { finalize, from, map, Observable, switchMap } from 'rxjs';
+import { MediaFile } from '@app/core/model/media-file.model';
+import { Loader } from '@app/shared/ui/loader/loader';
 @Component({
   selector: 'app-bull-detail-page',
   imports: [
@@ -29,6 +32,7 @@ import { Table, TableAction, TableColumn, TableFooter } from '@app/shared/ui/tab
     UploadVideo,
     UploadFile,
     UploadGallery,
+    Loader,
     Table,
     ReactiveFormsModule,
   ],
@@ -39,12 +43,22 @@ export default class BullDetailPage implements OnInit {
   private _router = inject(Router);
   private _bullService = inject(BullService);
   private _alertMessageService = inject(AlertMessageService);
+  private _gallery = signal<MediaFile[]>([]);
+
+  gallery = computed(() => {
+    return this.bull()?.gallery ?? [];
+  });
+  video = computed(() => {
+    return this.bull()?.video ?? null;
+  });
+  document = computed(() => {
+    return this.bull()?.geneticEvaluation ?? null;
+  });
 
   id = input.required<string>();
   bull = signal<Bull | null>(null);
   loading = signal(false);
   error = signal<string | null>(null);
-
   photoPreview = signal<string | null>(null);
 
   //formulario
@@ -98,7 +112,7 @@ export default class BullDetailPage implements OnInit {
   ];
 
   actions: TableAction<Straw>[] = [
-    { icon: '✏️', title: 'Editar', onClick: (row) => this.openEditModal(row) },
+    { icon: 'fa-solid fa-pen', title: 'Editar', onClick: (row) => this.openEditModal(row) },
   ];
 
   footer = computed<TableFooter>(() => ({
@@ -108,6 +122,7 @@ export default class BullDetailPage implements OnInit {
     colspanAfter: 3,
   }));
 
+  //loadings
   uploading = signal(false);
 
   ngOnInit() {
@@ -182,46 +197,21 @@ export default class BullDetailPage implements OnInit {
   activeTab = signal<'info' | 'stock' | 'gallery' | 'video' | 'genetic'>('info');
 
   onPhotoSelected(event: Event) {
-    this.uploading.set(true);
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
+    // Preview local inmediato
     const reader = new FileReader();
-    reader.onload = () => {
-      this.photoPreview.set(reader.result as string);
-    };
+    reader.onload = () => this.photoPreview.set(reader.result as string);
     reader.readAsDataURL(file);
-    const path = `supplier/bull/${this.id()}/`;
-    // 1. Pedir URL prefirmada
-    this._bullService.getUploadUrl(path, file.name, file.type).subscribe({
-      next: async ({ url }) => {
-        try {
-          await this._bullService.uploadFileToS3(url, file);
-          const cleanUrl = url.split('?')[0];
-          const key = cleanUrl.split('.com/')[1];
-          this._bullService.updateImage(this.id(), key, file.type).subscribe({
-            next: () => {
-              this._alertMessageService.success('Imagen actualizada con éxito!');
-              this.uploading.set(false);
-            },
-            error: (err) => {
-              this._alertMessageService.error(' Error actualizando imagen!' + err);
-              this.uploading.set(false);
-            },
-          });
-        } catch (err) {
-          console.error(' Error subiendo', err);
-          this._alertMessageService.error('Error subiendo archivo!' + err);
-          this.uploading.set(false);
-        }
-      },
 
-      error: (err) => {
-        this._alertMessageService.error('Error obteniendo URL prefirmada' + err);
-        console.error('');
-        this.uploading.set(false);
-      },
-    });
+    this.uploadFile(
+      file,
+      `supplier/bull/${this.id()}/`,
+      (key, contentType) =>
+        this._bullService.updateResource(this.id(), [{ key, contentType }], 'IMAGE'),
+      'Imagen actualizada con éxito!',
+    );
   }
 
   setTab(tab: 'info' | 'stock' | 'gallery' | 'video' | 'genetic') {
@@ -229,15 +219,67 @@ export default class BullDetailPage implements OnInit {
   }
 
   onGallerySelected(files: File[]) {
-    console.log(files);
+    this.uploading.set(true);
+
+    const path = `supplier/bull/${this.id()}/gallery/`;
+
+    // 1. Pide todas las URLs prefirmadas de una vez
+    this._bullService.getUploadUrls(path, files).subscribe({
+      next: async ({ urls }) => {
+        try {
+          // 2. Sube todos los archivos a S3 en paralelo
+          await Promise.all(
+            urls.map((url: string, i: number) => this._bullService.uploadFileToS3(url, files[i])),
+          );
+
+          // 3. Extrae los keys de las URLs
+          const mediaFiles = urls.map((url: string, i: number) => ({
+            key: url.split('?')[0].split('.com/')[1],
+            contentType: files[i].type,
+          }));
+
+          // 4. Actualiza la galería en BD
+          this._bullService.updateResource(this.id(), mediaFiles, 'GALLERY').subscribe({
+            next: (response) => {
+              this.bull.update((bull) => (bull ? { ...bull, gallery: response.gallery } : bull));
+              this._alertMessageService.success('Galería actualizada con éxito!');
+              this.uploading.set(false);
+            },
+            error: (err) => {
+              this._alertMessageService.error('Error actualizando galería: ' + err);
+              this.uploading.set(false);
+            },
+          });
+        } catch (err) {
+          this._alertMessageService.error('Error subiendo archivos: ' + err);
+          this.uploading.set(false);
+        }
+      },
+      error: (err) => {
+        this._alertMessageService.error('Error obteniendo URLs prefirmadas: ' + err);
+        this.uploading.set(false);
+      },
+    });
   }
 
   onVideoSelected(file: File) {
-    console.log(file);
+    this.uploadFile(
+      file,
+      `supplier/bull/${this.id()}/videos/`,
+      (key, contentType) =>
+        this._bullService.updateResource(this.id(), [{ key, contentType }], 'VIDEO'),
+      'Video actualizado con éxito!',
+    );
   }
 
   onDocumentSelected(file: File) {
-    console.log(file);
+    this.uploadFile(
+      file,
+      `supplier/bull/${this.id()}/documents/`,
+      (key, contentType) =>
+        this._bullService.updateResource(this.id(), [{ key, contentType }], 'DOCUMENT'),
+      'Documento actualizado con éxito!',
+    );
   }
 
   loadBull() {
@@ -245,6 +287,7 @@ export default class BullDetailPage implements OnInit {
     this._bullService.getById(this.id()).subscribe({
       next: (data) => {
         this.bull.set(data);
+        this._gallery.set(data.gallery);
         this.loading.set(false);
       },
       error: () => {
@@ -272,7 +315,49 @@ export default class BullDetailPage implements OnInit {
     this._router.navigateByUrl(`/${RoutesApp.admin}/${RoutesApp.bulls}`);
   }
 
+  handleDelete(key: string, resourceType: ResourceType) {
+    this._bullService.deleteResource(this.id(), key, resourceType).subscribe({
+      next: (data) => {
+        this.bull.set(data);
+        this._alertMessageService.success('Imagen eliminada con éxito!');
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('No se pudo eliminar la imagen.');
+        this.loading.set(false);
+      },
+    });
+  }
+
   get totalPajillas(): number {
     return this.straws().reduce((acc, p) => acc + p.inventory.stock, 0);
+  }
+
+  private uploadFile(
+    file: File,
+    path: string,
+    updateFn: (key: string, contentType: string) => Observable<unknown>,
+    successMessage: string,
+  ) {
+    this.uploading.set(true);
+
+    this._bullService
+      .getUploadUrl(path, file.name, file.type)
+      .pipe(
+        switchMap(({ url }) =>
+          from(this._bullService.uploadFileToS3(url, file)).pipe(
+            map(() => {
+              const key = url.split('?')[0].split('.com/')[1];
+              return { key, contentType: file.type };
+            }),
+          ),
+        ),
+        switchMap(({ key, contentType }) => updateFn(key, contentType)),
+        finalize(() => this.uploading.set(false)),
+      )
+      .subscribe({
+        next: () => this._alertMessageService.success(successMessage),
+        error: (err) => this._alertMessageService.error('Error en la subida: ' + err),
+      });
   }
 }

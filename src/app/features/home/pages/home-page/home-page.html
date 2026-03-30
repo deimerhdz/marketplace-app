@@ -1,5 +1,15 @@
-<app-carrousel />
-
+<app-carrousel [loop]="true" [delay]="4000">
+    <swiper-slide>
+        <div class="slide-custom">
+            <img src="1.png" alt="toro1.png" class="w-full h-full object-contain md:object-cover" />
+        </div>
+    </swiper-slide>
+    <swiper-slide>
+        <div class="slide-custom">
+            <img src="2.png" alt="toro2.png" class="w-full h-full object-contain md:object-cover" />
+        </div>
+    </swiper-slide>
+</app-carrousel>
 <div class="py-12 flex gap-10 flex-col">
     <div class="text-center">
         <h2 class="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
@@ -11,13 +21,13 @@
     </div>
     <app-breed-chips (breedSelected)="navigateToCatalog($event)" [breeds]="breeds()!" />
 </div>
-<app-featured-bull-list [bulls]="featuredBull()">
+<app-featured-bull-list [bulls]="recentBulls()!">
     <div class="text-center">
         <h2 class="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Productos Destacados
+            Toros Recién Llegados
         </h2>
         <p class="mt-1 text-muted-foreground">
-            Los mejores productos de genética bovina seleccionados para ti
+            Descubre los nuevos ejemplares de genética bovina disponibles para tu ganado
         </p>
     </div>
 

@@ -1,6 +1,6 @@
 export interface CreateBull {
   name: string;
-  stud: string;
+  numRegister: string;
   breed: string;
   birthDate: string;
   description: string;

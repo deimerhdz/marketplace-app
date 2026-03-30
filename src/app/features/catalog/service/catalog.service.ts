@@ -13,9 +13,10 @@ export class CatalogService {
   private _http = inject(HttpClient);
   private _apiUrl = environment.apiUrl;
 
-  /**
-   * Obtener toros destacados
-   */
+  getNew(limit: number): Observable<Bull[]> {
+    return this._http.get<Bull[]>(`${this._apiUrl}/catalog/recent?limit=${limit}`);
+  }
+
   getDetail(slug: string): Observable<Bull> {
     return this._http.get<Bull>(`${this._apiUrl}/catalog/${slug}`);
   }

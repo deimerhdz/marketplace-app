@@ -1,12 +1,15 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
-  OnInit,
-  signal,
+  ElementRef,
+  input,
+  ViewChild,
 } from '@angular/core';
-import { register, SwiperContainer } from 'swiper/element/bundle';
+import { register } from 'swiper/element/bundle';
 import { SwiperOptions } from 'swiper/types';
+
 // register Swiper custom elements
 register();
 
@@ -16,37 +19,44 @@ register();
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrl: './carrousel.css',
   template: `
-    <swiper-container init="false">
-      <swiper-slide>
-        <div class="slide-custom">
-          <img src="1.png" alt="toro1.png" class="w-full h-full object-contain md:object-cover" />
-        </div>
-      </swiper-slide>
-      <swiper-slide>
-        <div class="slide-custom">
-          <img src="2.png" alt="toro2.png" class="w-full h-full object-contain md:object-cover" />
-        </div>
-      </swiper-slide>
+    <swiper-container #swiperRef init="false" [class]="className()">
+      <ng-content />
     </swiper-container>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Carrousel implements OnInit {
-  swiperElement = signal<SwiperContainer | null>(null);
+export class Carrousel implements AfterViewInit {
+  @ViewChild('swiperRef') swiperRef!: ElementRef;
 
-  ngOnInit(): void {
-    this.config();
+  loop = input<boolean>(true);
+  autoplay = input<boolean>(true);
+  delay = input<number>(3000);
+  className = input<string>('');
+  slides = input<number>(1);
+  pagination = input<boolean>(true);
+  navigation = input<boolean>(false);
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.config();
+    }, 0);
   }
 
   config() {
-    const swiperElementConstructor = document.querySelector('swiper-container');
-    const swiperOptions: SwiperOptions = {
-      slidesPerView: 1,
-      pagination: true,
-      autoplay: true,
+    const params: SwiperOptions = {
+      loop: this.loop(),
+      slidesPerView: 1, // < 640px (móvil)
+      breakpoints: {
+        640: { slidesPerView: 2 }, // sm
+        768: { slidesPerView: 3 }, // md
+        1024: { slidesPerView: this.slides() }, // lg → usa el input
+      },
+      pagination: this.pagination(),
+      navigation: this.navigation(),
+      autoplay: this.autoplay() ? { delay: this.delay(), disableOnInteraction: false } : false,
+      spaceBetween: 20,
     };
-    Object.assign(swiperElementConstructor!, swiperOptions);
-    this.swiperElement.set(swiperElementConstructor as SwiperContainer);
-    this.swiperElement()?.initialize();
+
+    Object.assign(this.swiperRef.nativeElement, params);
+    this.swiperRef.nativeElement.initialize();
   }
 }

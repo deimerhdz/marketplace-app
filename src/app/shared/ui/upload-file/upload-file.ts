@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
-
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { MediaFile } from '@app/core/model/media-file.model';
+import { AlertMessageService } from '@app/shared/services/alert-message.service';
 @Component({
   selector: 'app-upload-file',
   imports: [],
@@ -65,39 +74,27 @@ import { ChangeDetectionStrategy, Component, output, signal } from '@angular/cor
               <button class="btn btn-error btn-sm text-white" (click)="removeFile()">
                 Eliminar
               </button>
-              <button class="btn btn-success btn-sm text-white">Guardar</button>
             </div>
           </div>
         }
-
-        <!-- Documentos ya subidos (mock) -->
-        <div class="mt-4">
-          <p class="text-xs text-base-content/50 uppercase tracking-wide mb-2">
-            Documentos guardados
-          </p>
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center justify-between p-3 border border-base-200 rounded-lg">
-              <div class="flex items-center gap-2">
-                <span class="badge badge-success badge-sm text-white">PDF</span>
-                <span class="text-sm">evaluacion_genetica_2023.pdf</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="btn btn-ghost btn-xs">Ver</button>
-                <button class="btn btn-ghost btn-xs text-error">✕</button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UploadFile {
+  private _alertMessageService = inject(AlertMessageService);
   file = signal<File | null>(null);
   fieName = signal<string | null>(null);
-
+  previewDocument = input<MediaFile | null>();
   document = output<File>();
+  handleDelete = output<string>();
+  constructor() {
+    effect(() => {
+      const preview = this.previewDocument();
+      this.fieName.set(preview ? preview.key.split('documents/')[1] : null);
+    });
+  }
 
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -108,7 +105,15 @@ export class UploadFile {
   }
 
   removeFile() {
-    this.file.set(null);
-    this.fieName.set(null);
+    this._alertMessageService
+      .confirm('¿Estás seguro?', 'Esta acción eliminará la imagen permanentemente.')
+      .then((result) => {
+        if (result.isConfirmed) {
+          const fileKey = this.previewDocument()?.key ?? '';
+          this.handleDelete.emit(fileKey);
+          this.fieName.set(null);
+          this.file.set(null);
+        }
+      });
   }
 }

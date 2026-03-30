@@ -23,7 +23,7 @@
             <div class="card-body items-center text-center gap-4">
                 <div class="avatar">
                     <div
-                        class="w-36 h-36 ring ring-success ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-200 flex items-center justify-center">
+                        class="w-60 h-40 ring ring-success ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-200 flex items-center justify-center">
                         @if (photoPreview()) {
                         <img [src]="photoPreview()" alt="Foto del toro" class="object-cover w-full h-full" />
                         }
@@ -44,14 +44,8 @@
                     <h3 class="text-lg font-bold">{{ bull()?.name }}</h3>
                     <p class="text-sm text-base-content/60">{{ bull()?.breed?.name }}</p>
                 </div>
-                <label class="btn btn-success btn-sm text-white w-full cursor-pointer"
-                    [class.btn-disabled]="uploading()">
-                    @if (uploading()) {
-                    <span class="loading loading-spinner loading-sm"></span>
-                    Subiendo...
-                    } @else {
+                <label class="btn btn-success btn-sm text-white w-full cursor-pointer">
                     {{ bull()?.image ? 'Cambiar foto' : 'Agregar foto' }}
-                    }
                     <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)" />
                 </label>
             </div>
@@ -127,17 +121,21 @@
 
         <!-- ── TAB: Galería de imágenes ── -->
         @if (activeTab() === 'gallery') {
-        <app-upload-gallery (images)="onGallerySelected($event)" />
+        <app-upload-gallery (images)="onGallerySelected($event)" [previewImages]="gallery()"
+            (handleDelete)="handleDelete($event, 'GALLERY')">
+        </app-upload-gallery>
         }
 
         <!-- ── TAB: Video ── -->
         @if (activeTab() === 'video') {
-        <app-upload-video (video)="onVideoSelected($event)" />
+        <app-upload-video (video)="onVideoSelected($event)" [previewVideo]="video()"
+            (handleDelete)="handleDelete($event, 'VIDEO')" />
         }
 
         <!-- ── TAB: Evaluación genética ── -->
         @if (activeTab() === 'genetic') {
-        <app-upload-file (document)="onDocumentSelected($event)" />
+        <app-upload-file (document)="onDocumentSelected($event)" [previewDocument]="document()"
+            (handleDelete)="handleDelete($event, 'DOCUMENT')" />
         }
 
     </div>
@@ -242,3 +240,5 @@
     <div class="modal-backdrop" role="button" tabindex="0" (click)="closeModal()"></div>
 </div>
 }
+
+<app-loader [visible]="uploading()"></app-loader>
