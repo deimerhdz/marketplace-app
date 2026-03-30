@@ -79,7 +79,7 @@
 
         <!-- ── TAB: Información general ── -->
         @if (activeTab() === 'info') {
-        <app-bull-info [bull]="bull()!" />
+        <app-bull-info [bull]="bull()!" (handleEdit)="handleEditBull($event)" />
         }
 
         <!-- ── TAB: Inventario / Stock ── -->

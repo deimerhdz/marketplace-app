@@ -1,6 +1,6 @@
 <div class="flex  items-center gap-4 mb-4">
     <button class="btn" (click)="back()">Volver</button>
-    <h2 class="text-2xl font-bold ">Agregar toro </h2>
+    <h2 class="text-2xl font-bold ">{{titlePage()}} </h2>
 </div>
 
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
@@ -53,7 +53,7 @@
 
         <!-- Botón también ocupa las 2 columnas -->
         <div class="mb-3 col-span-2">
-            <button class="btn btn-success text-white" type="submit">Registrar</button>
+            <button class="btn btn-success text-white" type="submit">{{submitButtonText()}}</button>
         </div>
     </div>
 </form>

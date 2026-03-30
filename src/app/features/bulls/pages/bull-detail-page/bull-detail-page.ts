@@ -329,6 +329,10 @@ export default class BullDetailPage implements OnInit {
     });
   }
 
+  handleEditBull(id: string) {
+    this._router.navigateByUrl(`/${RoutesApp.admin}/${RoutesApp.bulls}/${RoutesApp.edit}/${id}`);
+  }
+
   get totalPajillas(): number {
     return this.straws().reduce((acc, p) => acc + p.inventory.stock, 0);
   }

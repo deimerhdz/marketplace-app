@@ -27,6 +27,10 @@ export class BullService {
     return this._http.post<Bull>(`${this._apiUrl}/${RoutesApp.bulls}`, newBull);
   }
 
+  update(id: string, updateBull: CreateBull) {
+    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/${id}`, updateBull);
+  }
+
   getById(id: string) {
     return this._http.get<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/${id}`);
   }
@@ -65,24 +69,6 @@ export class BullService {
     };
     return this._http.post<{ urls: string[] }>(`${this._apiUrl}/files/pre-signed-urls`, body, {
       params,
-    });
-  }
-
-  updateGallery(id: string, files: { key: string; contentType: string }[]) {
-    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/gallery/${id}`, { files });
-  }
-
-  updateVideo(id: string, key: string, contentType: string) {
-    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/video/${id}`, {
-      key,
-      contentType,
-    });
-  }
-
-  updateDocument(id: string, key: string, contentType: string) {
-    return this._http.put<Bull>(`${this._apiUrl}/${RoutesApp.bulls}/document/${id}`, {
-      key,
-      contentType,
     });
   }
 
