@@ -28,7 +28,7 @@
                         <img [src]="photoPreview()" alt="Foto del toro" class="object-cover w-full h-full" />
                         }
                         @else if (bull()?.image) {
-                        <img [src]="bull()?.image?.key | imagePipe" alt="Foto del toro"
+                        <img [src]="bull()?.image?.key | filePipe" alt="Foto del toro"
                             class="object-cover w-full h-full" />
                         }
                         @else {

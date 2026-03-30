@@ -1,4 +1,4 @@
-import { ImagePipe } from '@app/shared/pipe/image.pipe';
+import { FilePipe } from '@app/shared/pipe/file.pipe';
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { Bull } from '@app/features/bulls/model/bull.model';
 import { Straw } from '@app/features/bulls/model/straw.model';
@@ -7,7 +7,7 @@ import { StrawSelector } from '../straw-selector/straw-selector';
 
 @Component({
   selector: 'app-card',
-  imports: [ImagePipe, StrawSelector, CurrencyPipe],
+  imports: [FilePipe, StrawSelector, CurrencyPipe],
   template: `
     @if (!item()) {
       <div class="flex w-full h-90 flex-col gap-4">
@@ -20,7 +20,7 @@ import { StrawSelector } from '../straw-selector/straw-selector';
       <div class="card bg-base-100 shadow-sm w-full h-90 flex flex-col">
         <figure class="aspect-video w-full h-full overflow-hidden bg-base-200">
           <img
-            [src]="item()?.image?.key | imagePipe"
+            [src]="item()?.image?.key | filePipe"
             [alt]="item()?.name"
             class="w-full h-full object-cover"
           />

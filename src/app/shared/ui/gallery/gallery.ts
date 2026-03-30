@@ -1,4 +1,4 @@
-import { ImagePipe } from '@app/shared/pipe/image.pipe';
+import { FilePipe } from '@app/shared/pipe/file.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,7 +14,7 @@ import { SwiperOptions } from 'swiper/types';
 register();
 @Component({
   selector: 'app-gallery',
-  imports: [ImagePipe],
+  imports: [FilePipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrl: './gallery.css',
   template: `
@@ -23,7 +23,7 @@ register();
         <swiper-slide>
           <img
             class="w-full md:w-4/5 aspect-251/171 rounded-sm object-cover mx-auto mb-8"
-            [src]="item.key | imagePipe"
+            [src]="item.key | filePipe"
             [alt]="item.key"
           />
         </swiper-slide>
@@ -42,7 +42,7 @@ register();
           <swiper-slide>
             <div class="slide-thumbnail">
               <img
-                [src]="item.key | imagePipe"
+                [src]="item.key | filePipe"
                 class="w-full h-full object-cover rounded-sm"
                 [alt]="item.key"
               />
